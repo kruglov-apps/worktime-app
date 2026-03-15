@@ -1,0 +1,2294 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes" />
+<meta name="theme-color" content="#0b0f17" />
+<link rel="manifest" href="manifest.json">
+<title>Табель</title>
+<style>
+:root{--bg:#0b0f17;--card:#111827;--muted:#9ca3af;--text:#e5e7eb;--line:rgba(255,255,255,.10);--s1:rgba(255,255,255,.18);--s2:rgba(96,165,250,.18);--s3:rgba(34,197,94,.18);--wd:rgba(245,158,11,.18);--vac:rgba(236,72,153,.18);--vacBorder:rgba(236,72,153,.42);--uVac:rgba(245,158,11,.18);--uVacBorder:rgba(245,158,11,.42);--sick:rgba(139,92,246,.22);--sickBorder:rgba(139,92,246,.55)}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg),#05070c);color:var(--text)}
+#errorBanner{display:none;position:sticky;top:0;z-index:999;background:#7f1d1d;color:#fee2e2;padding:10px 14px;font-size:13px}
+header{position:sticky;top:0;z-index:10;background:rgba(11,15,23,.8);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:14px}
+h1{margin:0;font-size:18px}.top{display:flex;justify-content:space-between;gap:10px;align-items:center}.pill{font-size:12px;color:var(--muted);padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.04)}
+main{max-width:1100px;margin:0 auto;padding:14px}.grid{display:grid;gap:12px;grid-template-columns:1fr}@media(min-width:900px){.grid{grid-template-columns:1.3fr .7fr}}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:18px;padding:12px}
+.controls{display:grid;gap:10px;grid-template-columns:1fr 1fr}@media(min-width:720px){.controls{grid-template-columns:repeat(3,1fr)}}
+label{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
+input,select,button{font:inherit;color:var(--text);background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:10px 12px}select option{color:#111827}button{cursor:pointer}button.primary{background:linear-gradient(180deg,rgba(96,165,250,.35),rgba(96,165,250,.16));border-color:rgba(96,165,250,.35)}button.small{padding:9px 10px;border-radius:12px;font-size:13px}
+.rowbtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.kpis{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}.kpi{padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.03)}.kpi .l{font-size:12px;color:var(--muted)}.kpi .v{font-size:22px;font-weight:800;margin-top:6px}
+.list{display:flex;flex-direction:column;gap:10px;margin-top:10px}.day{display:flex;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.02)}.shift-s1{background:linear-gradient(180deg,var(--s1),rgba(255,255,255,.02))}.shift-s2{background:linear-gradient(180deg,var(--s2),rgba(255,255,255,.02))}.shift-s3{background:linear-gradient(180deg,var(--s3),rgba(255,255,255,.02))}.shift-wd{background:linear-gradient(180deg,var(--wd),rgba(255,255,255,.02))}.leave-paid{}.tag.vac{border-color:var(--vacBorder);color:#ffffff}.tag.paidleave{border-color:var(--vacBorder);background:var(--vac);color:#fff !important;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}.tag.unpaidleave{border-color:var(--uVacBorder);background:var(--uVac);color:#fff !important;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}.tag.sickleave{border-color:var(--sickBorder);background:var(--sick);color:#fff !important;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.left{min-width:0}.date{font-weight:700}.dow{font-size:12px;color:var(--muted)}.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.tag{font-size:11px;padding:4px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}.tag.weekend{border-color:rgba(251,191,36,.35);color:rgba(251,191,36,.95)}.tag.sunday{border-color:rgba(251,113,133,.35);color:rgba(251,113,133,.95)}.tag.holiday{border-color:rgba(96,165,250,.35);color:rgba(96,165,250,.95)}
+.right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:320px}
+.timeBox{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end}
+.mini{display:flex;flex-direction:column;gap:4px;align-items:center;min-width:0}
+.mini .lab{font-size:12px;color:var(--muted);text-align:left}
+.step{display:flex;gap:8px;align-items:center;justify-content:flex-start;width:100%}
+.btn{width:40px;height:40px;min-width:40px;border-radius:12px;border:1px solid rgba(255,255,255,.16);display:grid;place-items:center;background:rgba(255,255,255,.06);color:#fff;user-select:none;font-weight:900;font-size:24px;line-height:1;flex:0 0 40px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.val{width:78px;min-width:78px;text-align:center;padding:8px 6px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03);font-weight:800;flex:0 0 78px}
+.selectSmall bottomControl{padding:9px 42px 9px 10px;border-radius:12px;font-size:13px;min-width:260px;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 12px center;background-size:16px}
+@media(max-width:760px){
+  .day{align-items:flex-start}
+  .right{width:100%;min-width:0}
+  .timeBox{width:100%}
+  .selectSmall bottomControl{width:100%;min-width:0}
+}
+.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.35}.backdrop{position:fixed;inset:0;display:none;align-items:flex-start;justify-content:stretch;padding:0;background:rgba(0,0,0,.82);z-index:200}.backdrop.open{display:flex}.modal{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;overflow:auto;background:rgba(11,15,23,.99);border:0;border-radius:0;margin:0;padding:12px env(safe-area-inset-right) calc(18px + env(safe-area-inset-bottom)) env(safe-area-inset-left)}.mhead{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:8px}.mgrid{display:grid;gap:10px;grid-template-columns:1fr}@media(min-width:820px){.mgrid{grid-template-columns:1fr 1fr}}.subcard{border:1px solid var(--line);border-radius:16px;padding:10px;background:rgba(255,255,255,.03)}
+.switch{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03);margin-top:10px}.toneGrid{display:grid;gap:10px;grid-template-columns:1fr 1fr}@media(min-width:820px){.toneGrid{grid-template-columns:repeat(2,1fr)}}.toneItem{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted);min-width:0}.toneTop{display:flex;align-items:center;justify-content:space-between}.toneItem input[type="color"]{padding:0;width:52px;height:40px;border-radius:12px;background:transparent;border:1px solid var(--line)}.toneItem input[type="range"]{width:100%}.muted{color:var(--muted)}
+
+.bottomControl{
+font-size:14px;
+padding:10px;
+text-align:center;
+}
+
+
+/* --- FORCE DAY/SHIFT CONTROLS TO BOTTOM ROW --- */
+.dayRowFix{
+  grid-template-columns:110px 1fr !important;
+  grid-auto-rows:auto !important;
+}
+
+.timeStackFix{
+  grid-column:2 !important;
+}
+
+.selectStackFix{
+  grid-column:1 / -1 !important;
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:10px !important;
+  margin-top:14px !important;
+}
+
+
+.selectStackFix{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:10px !important;
+  margin-top:12px !important;
+}
+
+
+.controlsRight{position:absolute;right:10px;top:10px;width:74px;display:flex;flex-direction:column;gap:10px;z-index:2}
+.controlsRight .selectSmall{padding:0 8px;height:40px;font-size:0;width:74px}
+.controlsRight .selectSmall option{font-size:14px}
+.controlsRight .selectSmall::before{font-size:14px}
+.controlsRight [data-action="type"]{background:var(--card)}
+.controlsRight [data-action="shift"]{background:var(--card)}
+.dayRowFix{position:relative}
+.specialContentPad{padding-right:86px}
+.leaveRowFix.singleLeave{grid-template-columns:1fr}
+.leaveRowFix.singleLeave .leaveMinBlock{display:none}
+.leaveRowFix.unpaidLeaveRow{grid-template-columns:1fr 1fr}
+
+
+.controlsRight{
+  position:absolute !important;
+  right:10px !important;
+  top:10px !important;
+  width:74px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+  z-index:3 !important;
+}
+.controlsRight .selectSmall{
+  width:74px !important;
+  min-width:74px !important;
+  max-width:74px !important;
+  padding:0 !important;
+  font-size:0 !important;
+  text-indent:-9999px !important;
+}
+.controlsRight [data-action="type"]{
+  display:block !important;
+}
+.controlsRight [data-action="shift"]{
+  display:block !important;
+}
+.controlsRight [data-action="source"]{
+  display:none !important;
+}
+.specialContentPad{
+  padding-right:86px !important;
+}
+.leaveRowFix.singleLeave{
+  grid-template-columns:1fr !important;
+}
+.leaveRowFix.singleLeave .leaveMinBlock{
+  display:none !important;
+}
+.leaveRowFix.unpaidLeaveRow{
+  grid-template-columns:1fr 1fr !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .step{
+  display:none !important;
+}
+
+
+.controlsRight{
+  position:absolute !important;
+  right:8px !important;
+  top:10px !important;
+  width:56px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+  z-index:3 !important;
+}
+.controlsRight .selectSmall{
+  width:56px !important;
+  min-width:56px !important;
+  max-width:56px !important;
+  height:40px !important;
+  padding:0 !important;
+  border-radius:12px !important;
+  font-size:0 !important;
+  text-indent:-9999px !important;
+  background:var(--card) !important;
+  border:1px solid var(--line) !important;
+  position:relative !important;
+}
+.controlsRight .selectSmall::after{
+  content:"⚙";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  color:var(--text);
+  text-indent:0;
+}
+.controlsRight [data-action="source"]::after{content:"⚙";}
+.specialContentPad{padding-right:72px !important;}
+.leaveRowFix.singleLeave,
+.leaveRowFix.unpaidLeaveRow{
+  grid-template-columns:1fr !important;
+  max-width:210px !important;
+}
+.leaveRowFix.singleLeave .timeItemFix,
+.leaveRowFix.unpaidLeaveRow .timeItemFix{
+  width:210px !important;
+}
+.leaveRowFix.singleLeave .leaveMinBlock{display:none !important;}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:6px !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .step{display:none !important;}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .selectSmall{
+  width:210px !important;
+  max-width:210px !important;
+}
+
+
+.controlsRight{
+  right:4px !important;
+  width:52px !important;
+}
+.controlsRight .selectSmall{
+  width:52px !important;
+  min-width:52px !important;
+  max-width:52px !important;
+  color:transparent !important;
+}
+.controlsRight .selectSmall::after{
+  content:"⚙";
+}
+.sourceInlineBtn{
+  width:210px !important;
+  max-width:210px !important;
+}
+
+
+/* fix right buttons visual */
+.controlsRight{
+  right:6px !important;
+  width:58px !important;
+}
+.controlsRight .selectSmall{
+  width:58px !important;
+  min-width:58px !important;
+  max-width:58px !important;
+  height:42px !important;
+  background:var(--card) !important;
+  border:1px solid var(--line) !important;
+  color:transparent !important;
+  position:relative !important;
+}
+.controlsRight .selectSmall::after{
+  content:"⚙";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--text);
+  font-size:16px;
+}
+
+/* place source button inline right of hours */
+.leaveRowFix.unpaidLeaveRow{
+  grid-template-columns:auto auto !important;
+  column-gap:12px !important;
+  align-items:center !important;
+}
+.leaveRowFix.unpaidLeaveRow .timeItemFix{
+  width:210px !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock{
+  width:160px !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .selectSmall{
+  width:160px !important;
+  max-width:160px !important;
+}
+
+
+.controlsRight .selectSmall{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 2px 8px rgba(0,0,0,.18) !important;
+  overflow:hidden !important;
+}
+.controlsRight .selectSmall::after{
+  content:"⚙" !important;
+}
+
+
+.controlsRight{
+  right:2px !important;
+  width:46px !important;
+}
+.controlsRight .selectSmall{
+  width:46px !important;
+  min-width:46px !important;
+  max-width:46px !important;
+  padding:0 !important;
+  color:transparent !important;
+  text-indent:-9999px !important;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='3'/><path d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 1 1 3.37 16.96l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82L3.2 7.2A2 2 0 1 1 6.03 4.37l.06.06a1.65 1.65 0 0 0 1.82.33h0A1.65 1.65 0 0 0 9 3.25V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06A2 2 0 1 1 20.63 7.2l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H22a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'/></svg>") !important;
+  background-repeat:no-repeat !important;
+  background-position:center center !important;
+  background-size:16px 16px !important;
+  background-color:rgba(255,255,255,.05) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+}
+.controlsRight .selectSmall::after{content:none !important;}
+.specialContentPad{padding-right:62px !important;}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock{width:190px !important;}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .selectSmall{width:190px !important;max-width:190px !important;}
+
+</style>
+<style>
+.dayRowFix{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:start}
+.dayMetaFix{display:flex;flex-direction:column;gap:4px}
+.timeStackFix{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.leaveRowFix{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.timeItemFix{display:flex;flex-direction:column;gap:6px}
+.timeItemFix .step{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.timeItemFix .btn{flex:0 0 40px}
+.timeItemFix .val{text-align:center;width:78px;min-width:78px;flex:0 0 78px}
+
+.timeItemFix{display:flex;flex-direction:column;gap:6px}
+.timeItemFix .lab{font-size:12px;color:var(--muted);text-align:left}
+.timeItemFix .step{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.timeItemFix .btn{flex:0 0 40px}
+.timeItemFix .val{flex:1 1 auto;min-width:0;text-align:center}
+.selectStackFix{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.dayRowFix{position:relative}
+
+@media (max-width: 760px){
+  .dayRowFix{grid-template-columns:110px 1fr;gap:10px}
+  .timeStackFix{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.leaveRowFix{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.timeItemFix{display:flex;flex-direction:column;gap:6px}
+.timeItemFix .step{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.timeItemFix .btn{flex:0 0 40px}
+.timeItemFix .val{text-align:center;width:78px;min-width:78px;flex:0 0 78px}
+
+  .timeItemFix .lab{font-size:11px}
+  .timeItemFix .btn{flex:0 0 40px;width:40px;height:40px}
+}
+
+.bottomControl{
+font-size:14px;
+padding:10px;
+text-align:center;
+}
+
+
+/* --- FORCE DAY/SHIFT CONTROLS TO BOTTOM ROW --- */
+.dayRowFix{
+  grid-template-columns:110px 1fr !important;
+  grid-auto-rows:auto !important;
+}
+
+.timeStackFix{
+  grid-column:2 !important;
+}
+
+.selectStackFix{
+  grid-column:1 / -1 !important;
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:10px !important;
+  margin-top:14px !important;
+}
+
+
+.selectStackFix{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:10px !important;
+  margin-top:12px !important;
+}
+
+
+.controlsRight{position:absolute;right:10px;top:10px;width:74px;display:flex;flex-direction:column;gap:10px;z-index:2}
+.controlsRight .selectSmall{padding:0 8px;height:40px;font-size:0;width:74px}
+.controlsRight .selectSmall option{font-size:14px}
+.controlsRight .selectSmall::before{font-size:14px}
+.controlsRight [data-action="type"]{background:var(--card)}
+.controlsRight [data-action="shift"]{background:var(--card)}
+.dayRowFix{position:relative}
+.specialContentPad{padding-right:86px}
+.leaveRowFix.singleLeave{grid-template-columns:1fr}
+.leaveRowFix.singleLeave .leaveMinBlock{display:none}
+.leaveRowFix.unpaidLeaveRow{grid-template-columns:1fr 1fr}
+
+
+.controlsRight{
+  position:absolute !important;
+  right:10px !important;
+  top:10px !important;
+  width:74px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+  z-index:3 !important;
+}
+.controlsRight .selectSmall{
+  width:74px !important;
+  min-width:74px !important;
+  max-width:74px !important;
+  padding:0 !important;
+  font-size:0 !important;
+  text-indent:-9999px !important;
+}
+.controlsRight [data-action="type"]{
+  display:block !important;
+}
+.controlsRight [data-action="shift"]{
+  display:block !important;
+}
+.controlsRight [data-action="source"]{
+  display:none !important;
+}
+.specialContentPad{
+  padding-right:86px !important;
+}
+.leaveRowFix.singleLeave{
+  grid-template-columns:1fr !important;
+}
+.leaveRowFix.singleLeave .leaveMinBlock{
+  display:none !important;
+}
+.leaveRowFix.unpaidLeaveRow{
+  grid-template-columns:1fr 1fr !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .step{
+  display:none !important;
+}
+
+
+.controlsRight{
+  position:absolute !important;
+  right:8px !important;
+  top:10px !important;
+  width:56px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+  z-index:3 !important;
+}
+.controlsRight .selectSmall{
+  width:56px !important;
+  min-width:56px !important;
+  max-width:56px !important;
+  height:40px !important;
+  padding:0 !important;
+  border-radius:12px !important;
+  font-size:0 !important;
+  text-indent:-9999px !important;
+  background:var(--card) !important;
+  border:1px solid var(--line) !important;
+  position:relative !important;
+}
+.controlsRight .selectSmall::after{
+  content:"⚙";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  color:var(--text);
+  text-indent:0;
+}
+.controlsRight [data-action="source"]::after{content:"⚙";}
+.specialContentPad{padding-right:72px !important;}
+.leaveRowFix.singleLeave,
+.leaveRowFix.unpaidLeaveRow{
+  grid-template-columns:1fr !important;
+  max-width:210px !important;
+}
+.leaveRowFix.singleLeave .timeItemFix,
+.leaveRowFix.unpaidLeaveRow .timeItemFix{
+  width:210px !important;
+}
+.leaveRowFix.singleLeave .leaveMinBlock{display:none !important;}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:6px !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .step{display:none !important;}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .selectSmall{
+  width:210px !important;
+  max-width:210px !important;
+}
+
+
+.controlsRight{
+  right:4px !important;
+  width:52px !important;
+}
+.controlsRight .selectSmall{
+  width:52px !important;
+  min-width:52px !important;
+  max-width:52px !important;
+  color:transparent !important;
+}
+.controlsRight .selectSmall::after{
+  content:"⚙";
+}
+.sourceInlineBtn{
+  width:210px !important;
+  max-width:210px !important;
+}
+
+
+/* fix right buttons visual */
+.controlsRight{
+  right:6px !important;
+  width:58px !important;
+}
+.controlsRight .selectSmall{
+  width:58px !important;
+  min-width:58px !important;
+  max-width:58px !important;
+  height:42px !important;
+  background:var(--card) !important;
+  border:1px solid var(--line) !important;
+  color:transparent !important;
+  position:relative !important;
+}
+.controlsRight .selectSmall::after{
+  content:"⚙";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--text);
+  font-size:16px;
+}
+
+/* place source button inline right of hours */
+.leaveRowFix.unpaidLeaveRow{
+  grid-template-columns:auto auto !important;
+  column-gap:12px !important;
+  align-items:center !important;
+}
+.leaveRowFix.unpaidLeaveRow .timeItemFix{
+  width:210px !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock{
+  width:160px !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .selectSmall{
+  width:160px !important;
+  max-width:160px !important;
+}
+
+
+.controlsRight .selectSmall{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 2px 8px rgba(0,0,0,.18) !important;
+  overflow:hidden !important;
+}
+.controlsRight .selectSmall::after{
+  content:"⚙" !important;
+}
+
+
+.controlsRight{
+  right:2px !important;
+  width:46px !important;
+}
+.controlsRight .selectSmall{
+  width:46px !important;
+  min-width:46px !important;
+  max-width:46px !important;
+  padding:0 !important;
+  color:transparent !important;
+  text-indent:-9999px !important;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='3'/><path d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 1 1 3.37 16.96l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82L3.2 7.2A2 2 0 1 1 6.03 4.37l.06.06a1.65 1.65 0 0 0 1.82.33h0A1.65 1.65 0 0 0 9 3.25V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06A2 2 0 1 1 20.63 7.2l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H22a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'/></svg>") !important;
+  background-repeat:no-repeat !important;
+  background-position:center center !important;
+  background-size:16px 16px !important;
+  background-color:rgba(255,255,255,.05) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+}
+.controlsRight .selectSmall::after{content:none !important;}
+.specialContentPad{padding-right:62px !important;}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock{width:190px !important;}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .selectSmall{width:190px !important;max-width:190px !important;}
+
+</style>
+
+
+<style id="v80-final-clean">
+.controlsRight{
+  position:absolute !important;
+  right:-18px !important;
+  top:10px !important;
+  width:46px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  gap:10px !important;
+  z-index:10 !important;
+}
+.controlsRight .selectSmall{
+  width:46px !important;
+  min-width:46px !important;
+  max-width:46px !important;
+  height:42px !important;
+  padding:0 !important;
+  color:transparent !important;
+  text-indent:-9999px !important;
+  background-repeat:no-repeat !important;
+  background-position:center center !important;
+  background-size:16px 16px !important;
+  background-color:rgba(255,255,255,.05) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  appearance:none !important;
+  -webkit-appearance:none !important;
+}
+.controlsRight .selectSmall::after{content:none !important;}
+.specialContentPad{padding-right:64px !important;}
+
+.leaveRowFix.unpaidLeaveRow{
+  grid-template-columns:auto auto !important;
+  column-gap:12px !important;
+  align-items:center !important;
+}
+.leaveRowFix.unpaidLeaveRow .timeItemFix{
+  width:210px !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock{
+  width:190px !important;
+  align-self:start !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .step{
+  display:none !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .selectSmall{
+  width:190px !important;
+  max-width:190px !important;
+  color:var(--text) !important;
+  text-indent:0 !important;
+  padding:0 12px !important;
+  background-image:none !important;
+}
+</style>
+
+
+<style id="v81-night-note-fix">
+.nightNoteFix{
+  margin-top:8px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.35;
+}
+.nightInputsHide{
+  display:none !important;
+}
+</style>
+
+
+<style id="v82-night-note-style">
+.nightNoteFix{
+  margin-top:8px;
+  font-size:11px;
+  line-height:1.25;
+  color:#fca5a5;
+  letter-spacing:.2px;
+  opacity:.95;
+}
+.nightInputsHide{
+  display:none !important;
+}
+</style>
+
+
+<style id="v83-final-overrides">
+/* Fullscreen settings modals */
+.backdrop{
+  position:fixed !important;
+  inset:0 !important;
+  display:none !important;
+  align-items:stretch !important;
+  justify-content:stretch !important;
+  padding:0 !important;
+  margin:0 !important;
+  background:rgba(0,0,0,.82) !important;
+  z-index:9999 !important;
+}
+.backdrop.open{
+  display:flex !important;
+}
+.modal{
+  width:100vw !important;
+  max-width:100vw !important;
+  min-width:100vw !important;
+  height:100dvh !important;
+  max-height:100dvh !important;
+  min-height:100dvh !important;
+  margin:0 !important;
+  border-radius:0 !important;
+  border:0 !important;
+  padding:12px env(safe-area-inset-right) calc(18px + env(safe-area-inset-bottom)) env(safe-area-inset-left) !important;
+  overflow:auto !important;
+  background:rgba(11,15,23,.99) !important;
+  box-sizing:border-box !important;
+}
+
+/* More room for source so it doesn't go under settings */
+.specialContentPad{
+  padding-right:96px !important;
+}
+.leaveRowFix.unpaidLeaveRow{
+  grid-template-columns:170px 1fr !important;
+  column-gap:10px !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock [data-action="source"]{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  padding-right:26px !important;
+  box-sizing:border-box !important;
+}
+
+/* Hide all night numeric blocks/labels hard */
+.nightInputsHide{
+  display:none !important;
+}
+.nightNoteFix{
+  margin:8px 0 2px 0 !important;
+  font-size:11px !important;
+  line-height:1.2 !important;
+  color:#f87171 !important;
+  letter-spacing:.15px !important;
+  opacity:.95 !important;
+}
+</style>
+
+
+<style id="v110-fullscreen-fix">
+.backdrop,
+div.backdrop{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  max-width:100vw !important;
+  max-height:100dvh !important;
+  padding:0 !important;
+  margin:0 !important;
+  align-items:stretch !important;
+  justify-content:stretch !important;
+  z-index:99999 !important;
+}
+.backdrop.open,
+div.backdrop.open{
+  display:flex !important;
+}
+.backdrop .modal,
+div.backdrop .modal{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  min-width:100vw !important;
+  min-height:100dvh !important;
+  max-width:100vw !important;
+  max-height:100dvh !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-sizing:border-box !important;
+  overflow:auto !important;
+  padding:12px env(safe-area-inset-right) calc(18px + env(safe-area-inset-bottom)) env(safe-area-inset-left) !important;
+  background:rgba(11,15,23,.99) !important;
+}
+</style>
+
+
+<style id="v110-layout-fix">
+.controlsRight{
+  right:8px !important;
+  top:10px !important;
+  width:44px !important;
+  gap:10px !important;
+  align-items:center !important;
+}
+.controlsRight .selectSmall{
+  width:44px !important;
+  min-width:44px !important;
+  max-width:44px !important;
+  height:40px !important;
+}
+.specialContentPad{
+  padding-right:96px !important;
+}
+.leaveRowFix.unpaidLeaveRow{
+  grid-template-columns:170px 1fr !important;
+  column-gap:10px !important;
+  align-items:end !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock{
+  min-width:0 !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .selectSmall{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+  padding-right:30px !important;
+}
+.nightNoteOnly{
+  margin-top:8px !important;
+  color:#f87171 !important;
+  font-size:11px !important;
+  line-height:1.2 !important;
+}
+</style>
+
+
+<style id="v111-fixes">
+/* Menus: truly fullscreen with inline dimensions backup */
+.backdrop,
+div.backdrop{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  min-width:100vw !important;
+  min-height:100vh !important;
+  max-width:100vw !important;
+  max-height:100vh !important;
+  padding:0 !important;
+  margin:0 !important;
+  align-items:stretch !important;
+  justify-content:stretch !important;
+  z-index:999999 !important;
+}
+.backdrop .modal,
+div.backdrop .modal{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  min-width:100vw !important;
+  min-height:100vh !important;
+  max-width:100vw !important;
+  max-height:100vh !important;
+  border:0 !important;
+  border-radius:0 !important;
+  margin:0 !important;
+  overflow:auto !important;
+  box-sizing:border-box !important;
+  background:rgba(11,15,23,.99) !important;
+}
+
+/* Right controls and source */
+.controlsRight{
+  right:6px !important;
+  top:10px !important;
+  width:52px !important;
+  min-width:52px !important;
+  max-width:52px !important;
+  gap:10px !important;
+  align-items:center !important;
+}
+.controlsRight .selectSmall{
+  width:52px !important;
+  min-width:52px !important;
+  max-width:52px !important;
+  height:42px !important;
+}
+.specialContentPad{
+  padding-right:88px !important;
+}
+.leaveRowFix.unpaidLeaveRow{
+  grid-template-columns:150px minmax(0,1fr) !important;
+  gap:12px !important;
+  align-items:end !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock{
+  min-width:0 !important;
+  padding-right:6px !important;
+}
+.sourceInlineBtn{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+}
+</style>
+
+
+<style id="v112-fixes">
+/* fullscreen menus */
+.backdrop,
+div.backdrop{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  display:none !important;
+  align-items:stretch !important;
+  justify-content:stretch !important;
+  padding:0 !important;
+  margin:0 !important;
+  z-index:999999 !important;
+  background:rgba(0,0,0,.84) !important;
+}
+.backdrop.open,
+div.backdrop.open{
+  display:flex !important;
+}
+.backdrop > .modal,
+div.backdrop > .modal{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  min-width:100vw !important;
+  min-height:100dvh !important;
+  max-width:100vw !important;
+  max-height:100dvh !important;
+  margin:0 !important;
+  border-radius:0 !important;
+  border:0 !important;
+  overflow:auto !important;
+  box-sizing:border-box !important;
+  padding:12px env(safe-area-inset-right) calc(22px + env(safe-area-inset-bottom)) env(safe-area-inset-left) !important;
+  transform:none !important;
+}
+
+/* source row */
+.specialContentPad{
+  padding-right:92px !important;
+}
+.leaveRowFix.unpaidLeaveRow{
+  grid-template-columns:176px minmax(0,1fr) !important;
+  gap:16px !important;
+  align-items:end !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock{
+  min-width:0 !important;
+  margin-left:6px !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock .selectSmall,
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock select{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+  padding-right:28px !important;
+}
+</style>
+
+
+<style id="v113-ui-fixes">
+/* ===== FULLSCREEN MENUS FIX ===== */
+.backdrop,
+.backdrop.open{
+position:fixed!important;
+left:0!important;
+top:0!important;
+right:0!important;
+bottom:0!important;
+width:100vw!important;
+height:100vh!important;
+max-width:none!important;
+margin:0!important;
+padding:0!important;
+}
+
+.backdrop .modal{
+position:fixed!important;
+left:0!important;
+top:0!important;
+width:100vw!important;
+height:100vh!important;
+max-width:none!important;
+max-height:none!important;
+border-radius:0!important;
+margin:0!important;
+transform:none!important;
+}
+
+/* ===== SOURCE BUTTON GRID FIX ===== */
+.leaveRowFix.unpaidLeaveRow{
+grid-template-columns:180px minmax(0,1fr) 56px!important;
+gap:14px!important;
+}
+
+.leaveRowFix.unpaidLeaveRow select{
+min-width:0!important;
+width:100%!important;
+}
+
+/* extra spacing so select never hits gear */
+.specialContentPad{
+padding-right:100px!important;
+}
+</style>
+
+
+<style id="v114-fixes">
+/* ===== FORCE FULLSCREEN MODALS ===== */
+.backdrop,
+.backdrop.open{
+position:fixed!important;
+left:0!important;
+top:0!important;
+right:0!important;
+bottom:0!important;
+width:100vw!important;
+height:100vh!important;
+max-width:100vw!important;
+margin:0!important;
+padding:0!important;
+display:flex!important;
+}
+
+.backdrop .modal{
+position:fixed!important;
+left:0!important;
+top:0!important;
+right:0!important;
+bottom:0!important;
+width:100vw!important;
+height:100vh!important;
+max-width:100vw!important;
+max-height:100vh!important;
+margin:0!important;
+border-radius:0!important;
+transform:none!important;
+}
+
+/* ===== SOURCE BLOCK SAFE LAYOUT ===== */
+.leaveRowFix.unpaidLeaveRow{
+display:grid!important;
+grid-template-columns:180px 1fr 56px!important;
+gap:12px!important;
+align-items:center!important;
+}
+
+.leaveRowFix.unpaidLeaveRow select{
+width:100%!important;
+min-width:0!important;
+}
+
+.specialContentPad{
+padding-right:110px!important;
+}
+</style>
+
+
+<style id="vnext-scale-and-calendar">
+@media (max-width: 760px){
+  html,body{overflow-x:hidden !important}
+  body{font-size:14px !important}
+  header{padding:10px !important}
+  main{padding:10px !important}
+  .card{padding:10px !important}
+  .day{padding:8px !important}
+}
+.viewToolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.viewBadge{font-size:12px;color:var(--muted)}
+.calendarWrap{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.calCell{border:1px solid var(--line);border-radius:12px;padding:6px;min-height:64px;background:rgba(255,255,255,.03);font-size:12px}
+.calCell .d{font-weight:700;font-size:13px;margin-bottom:4px}
+.calCell .s{font-size:11px;color:var(--muted);line-height:1.15}
+.calCell.weekend{border-color:rgba(251,191,36,.25)}
+.calCell.holiday{border-color:rgba(96,165,250,.35)}
+.calCell.paidleave{background:var(--vac)}
+.calCell.unpaidleave{background:var(--uVac)}
+.calCell.sickleave{background:var(--sick)}
+.calDow{font-size:11px;color:var(--muted);text-align:center;padding:4px 0}
+</style>
+
+
+<style id="v120-fix-css">
+.rangeToolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.rangeToolbar .small{flex:1 1 220px}
+.dayPreviewBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:2147483646}
+.dayPreviewBackdrop.open{display:block}
+.dayPreviewCard{position:fixed;left:50%;transform:translateX(-50%);top:61vh;width:min(92vw,460px);max-height:34vh;overflow:auto;background:rgba(11,15,23,.98);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:12px;box-shadow:0 12px 32px rgba(0,0,0,.35)}
+.dayPreviewTitle{font-size:14px;font-weight:700;margin-bottom:8px}
+.dayPreviewMeta{font-size:12px;color:#9ca3af;margin-bottom:8px}
+.dayPreviewGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px}
+.dayPreviewGrid>div{padding:8px 10px;border:1px solid rgba(255,255,255,.10);border-radius:12px;background:rgba(255,255,255,.03)}
+#rangeBackdrop .modal{max-width:min(96vw,520px)!important;width:min(96vw,520px)!important;height:auto!important;min-height:auto!important;left:50%!important;top:54%!important;transform:translate(-50%,-50%)!important}
+@media (max-width:760px){
+  html,body{overflow-x:hidden!important;max-width:100%!important}
+  .day{display:block!important;overflow:hidden!important}
+  .dayRowFix{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
+  .timeStackFix,.leaveRowFix{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+  .selectStackFix.controlsBottom{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+  .selectStackFix.controlsBottom [data-action="source"]{grid-column:1 / -1!important}
+  .controlsRight{position:static!important;right:auto!important;top:auto!important;width:auto!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:10px!important}
+  .controlsRight [data-action="source"]{grid-column:1 / -1!important}
+  .specialContentPad{padding-right:0!important}
+  .selectSmall,.bottomControl{width:100%!important;max-width:100%!important;min-width:0!important}
+  .timeItemFix .step{display:grid!important;grid-template-columns:34px minmax(56px,1fr) 34px!important;gap:6px!important;align-items:center}
+  .timeItemFix .btn{width:34px!important;height:34px!important;min-width:34px!important}
+  .timeItemFix .val{width:auto!important;min-width:0!important}
+  .calendarWrap{gap:4px!important}
+  .calCell{min-height:58px!important}
+}
+</style>
+
+
+<style id="v120c-ui-patch">
+.fixedTopActions{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:10px !important;
+  align-items:stretch !important;
+  width:100% !important;
+  margin-top:10px !important;
+}
+.fixedTopActions .small{
+  width:100% !important;
+  min-width:0 !important;
+  justify-self:stretch !important;
+}
+.rangeToolbar{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:10px !important;
+  width:100% !important;
+}
+.rangeToolbar .small{
+  width:100% !important;
+  min-width:0 !important;
+}
+@media (max-width:760px){
+  .fixedTopActions,.rangeToolbar{
+    grid-template-columns:1fr 1fr !important;
+  }
+}
+.dayMetaFix{
+  align-items:center !important;
+  text-align:center !important;
+  justify-content:center !important;
+}
+.dayMetaFix .tags{
+  justify-content:center !important;
+}
+#scheduleBackdrop .controls[style*="grid-template-columns:1fr 1fr"]{
+  grid-template-columns:1fr 1fr !important;
+}
+.lunchCard{margin-top:10px}
+.lunchGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.lunchSwitches{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  margin-top:10px;
+}
+@media (max-width:760px){
+  .lunchGrid{grid-template-columns:1fr 1fr;}
+}
+.calendarWrap .calCell{cursor:pointer}
+.dayPreviewBackdrop.open{display:block !important}
+.dayPreviewCard{top:62vh !important}
+</style>
+
+</head><body>
+<div id="errorBanner"></div>
+<header><div class="top"><h1>Табель</h1><div class="pill"><span id="pillFlag">🇩🇪</span> <span id="pillText">Германия • график</span></div></div></header>
+<main><div class="grid">
+<section class="card">
+  <div class="controls">
+    <label>Страна<select id="country"></select></label>
+    <label id="regionLabel">Регион<select id="region"></select></label>
+    <label>Месяц<input id="month" type="month"></label>
+  </div>
+  <div class="rowbtns fixedTopActions"><button class="small" id="scheduleBtn" type="button">⚙️ Настроить график</button><button class="small" id="tariffBtn" type="button">💶 Настроить тариф</button></div>
+  <div class="viewToolbar"><button class="small" id="toggleViewBtn" type="button">📅 Вид: список</button><button class="small" id="newMonthBtn" type="button">🗓 Новый месяц</button><span class="viewBadge" id="carryHint"></span></div>
+  <div class="rangeToolbar"><button class="small" id="vacationRangeBtn" type="button">🗓 Отпуск по графику</button><button class="small" id="sickRangeBtn" type="button">🤒 Больничный</button></div>
+  <div class="list" id="list"></div>
+  <div class="rowbtns" style="justify-content:flex-end"><button id="exportBtn" type="button">Экспорт CSV</button><button class="primary" id="resetBtn" type="button">Сбросить месяц</button></div>
+  <div class="hint">Минуты меняются по выбранному шагу. Суббота/воскресенье определяются автоматически. Тип дня вручную: Авто / Будний / Праздник / Отпуск оплачиваемый / Отпуск за свой счёт / Больничный.</div>
+</section>
+<aside class="card">
+  <div class="kpis">
+    <div class="kpi"><div class="l">Работа</div><div class="v" id="kpiWork">0.00 ч</div></div>
+    <div class="kpi"><div class="l">Переработка</div><div class="v" id="kpiOver">0.00 ч</div></div>
+    <div class="kpi"><div class="l">Депозит</div><div class="v" id="kpiBank">0.00 ч</div></div>
+    <div class="kpi"><div class="l">Брутто</div><div class="v" id="kpiPay">0.00 €</div></div><div class="kpi"><div class="l">Нетто</div><div class="v" id="kpiNet">0.00 €</div></div>
+  </div>
+  <div class="hint" id="sideHint">Остаток отпуска: 0.00 ч • Закрытие часов за месяц задаётся в тарифе.</div><div class="hint" id="taxHint" style="margin-top:6px">Налог: 0.00 € • Нетто: 0.00 €</div>
+
+  <div class="subcard" style="margin-top:12px">
+    <div style="font-weight:700;margin-bottom:8px">Итоги месяца</div>
+    <div class="hint" style="margin-top:0;margin-bottom:8px">Часы и расчёт по категориям за текущий месяц.</div>
+    <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;font-size:13px;align-items:center">
+      <div class="muted">Показатель</div><div class="muted">Часы</div><div class="muted">Сумма</div>
+
+      <div>Базовые часы</div><div id="sumBaseH">0.00</div><div id="sumBasePay">0.00</div>
+      <div>Переработка будней</div><div id="sumOverH">0.00</div><div id="sumOverPay">0.00</div>
+      <div>Воскресенье / праздничные</div><div id="sumSunHolH">0.00</div><div id="sumSunHolPay">0.00</div>
+      <div>Оплачиваемый отпуск</div><div id="sumVacH">0.00</div><div id="sumVacPay">0.00</div>
+      <div>Списание из отпуска</div><div id="sumDedVac">0.00</div><div>—</div>
+      <div>Списание из депозита / суббот</div><div id="sumDedBank">0.00</div><div>—</div>
+      <div>Списание из воскресений / праздничных</div><div id="sumDedSun">0.00</div><div>—</div>
+    </div>
+    <div class="hint" id="banksHint" style="margin-top:10px">Остатки: отпуск 0 ч • депозит 0 ч • воскресенья/праздничные 0 ч</div>
+  </div>
+
+</aside>
+</div></main>
+
+<div class="backdrop" id="scheduleBackdrop"><div class="modal">
+  <div class="mhead"><h2 style="margin:0;font-size:16px">Настроить график</h2><button id="closeScheduleBtn" type="button">✕ Закрыть</button></div>
+  <div class="mgrid" style="margin-top:10px">
+    <div class="subcard">
+      <div class="controls" style="grid-template-columns:1fr 1fr">
+        <label>Шаблон графика<select id="template"><option value="none">Нет графика</option><option value="five_day">Пятидневная неделя (Пн-Пт)</option><option value="week_s1_s2">Неделя 1 смена / неделя 2 смена (Пн-Пт)</option><option value="2on2off">2 через 2</option><option value="custom">Пользовательский цикл</option></select></label>
+        <label>Дата начала цикла<input id="anchor" type="date"></label>
+      </div>
+      <div class="switch"><div><b>Авто-смены по графику</b><div class="muted">Если включено — смена “Авто” считается по графику.</div></div><input id="autoShift" type="checkbox"></div>
+      <div class="switch"><div><b>Заполнять рабочее время по графику</b><div class="muted">Поставит 8:00 для рабочих смен по шаблону.</div></div><input id="fillTime" type="checkbox"></div>
+      <div class="switch"><div><b>Не перезаписывать уже введённое</b><div class="muted">Пустые дни заполнит, существующие оставит.</div></div><input id="preserveTime" type="checkbox" checked></div>
+      <div class="controls" style="grid-template-columns:1fr 1fr;margin-top:10px">
+        <label>Стандарт 1 смена (часы)<input id="hS1" type="number" step="0.25" min="0" max="24"></label>
+        <label>Стандарт 2 смена (часы)<input id="hS2" type="number" step="0.25" min="0" max="24"></label>
+        <label>Стандарт 3 смена (часы)<input id="hS3" type="number" step="0.25" min="0" max="24"></label>
+        <label>Стандарт Рабочий день (часы)<input id="hWD" type="number" step="0.25" min="0" max="24"></label>
+      </div>
+      <div class="controls" style="grid-template-columns:1fr 1fr;margin-top:10px">
+        <label>Интервал рабочих минут<select id="minuteStep"><option value="1">1</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="30">30</option></select></label>
+        <label style="justify-content:flex-end"><span style="visibility:hidden">.</span><span style="display:flex;align-items:center;gap:8px;padding-top:28px"><input id="considerNight" type="checkbox" style="width:auto"> учитывать ночное время</span></label>
+        <label>Ночные часы: начало<input id="nightStart" type="time"></label>
+        <label>Ночные часы: конец<input id="nightEnd" type="time"></label>
+        <label>1 смена: начало<input id="startS1" type="time"></label>
+        <label>1 смена: конец<input id="endS1" type="time"></label>
+        <label>2 смена: начало<input id="startS2" type="time"></label>
+        <label>2 смена: конец<input id="endS2" type="time"></label>
+        <label>3 смена: начало<input id="startS3" type="time"></label>
+        <label>3 смена: конец<input id="endS3" type="time"></label>
+        <label>Рабочий день: начало<input id="startWD" type="time"></label>
+        <label>Рабочий день: конец<input id="endWD" type="time"></label>
+      </div>
+
+      
+      <div class="subcard lunchCard">
+        <div style="font-weight:700;margin-bottom:8px">Настройки обеда</div>
+        <div class="lunchGrid">
+          <label>Длительность обеда (мин)<input id="lunchDuration" type="number" min="0" max="180" step="5"></label>
+          <label>Не вычитать, если отработано меньше (ч)<input id="lunchSkipUnderHours" type="number" min="0" max="24" step="0.5"></label>
+        </div>
+        <div class="lunchSwitches">
+          <div class="switch"><div><b>Вычитать обед автоматически</b><div class="muted">Для обычных будней и смен.</div></div><input id="lunchAuto" type="checkbox"></div>
+          <div class="switch"><div><b>Не вычитать в воскресенье</b><div class="muted">Все часы считаются рабочими.</div></div><input id="lunchSkipSunday" type="checkbox"></div>
+          <div class="switch"><div><b>Не вычитать в праздники</b><div class="muted">Все часы считаются рабочими.</div></div><input id="lunchSkipHoliday" type="checkbox"></div>
+        </div>
+        <div class="lunchGrid" style="margin-top:10px">
+          <label>Норма смены (ч)<input id="normShiftHours" type="number" min="0" max="24" step="0.25"></label>
+          <div class="switch" style="margin-top:24px"><div><b>Недостачу брать из депозита</b><div class="muted">Для обычных рабочих дней.</div></div><input id="takeMissingFromBank" type="checkbox"></div>
+        </div>
+      </div>
+
+<div class="toneGrid">
+        <div class="toneItem"><div class="toneTop"><b>1 смена</b><span id="pctS1">55%</span></div><div style="display:flex;gap:8px;align-items:center"><input id="colorS1" type="color"><input id="toneS1" type="range" min="0" max="100"></div></div>
+        <div class="toneItem"><div class="toneTop"><b>2 смена</b><span id="pctS2">55%</span></div><div style="display:flex;gap:8px;align-items:center"><input id="colorS2" type="color"><input id="toneS2" type="range" min="0" max="100"></div></div>
+        <div class="toneItem"><div class="toneTop"><b>3 смена</b><span id="pctS3">55%</span></div><div style="display:flex;gap:8px;align-items:center"><input id="colorS3" type="color"><input id="toneS3" type="range" min="0" max="100"></div></div>
+        <div class="toneItem"><div class="toneTop"><b>Рабочий день</b><span id="pctWD">55%</span></div><div style="display:flex;gap:8px;align-items:center"><input id="colorWD" type="color"><input id="toneWD" type="range" min="0" max="100"></div></div>
+        <div class="toneItem"><div class="toneTop"><b>Отпуск оплач.</b><span id="pctVAC">55%</span></div><div style="display:flex;gap:8px;align-items:center"><input id="colorVAC" type="color"><input id="toneVAC" type="range" min="0" max="100"></div></div>
+        <div class="toneItem"><div class="toneTop"><b>Отпуск без оплаты</b><span id="pctUVAC">55%</span></div><div style="display:flex;gap:8px;align-items:center"><input id="colorUVAC" type="color"><input id="toneUVAC" type="range" min="0" max="100"></div></div>
+        <div class="toneItem"><div class="toneTop"><b>Больничный</b><span id="pctSICK">55%</span></div><div style="display:flex;gap:8px;align-items:center"><input id="colorSICK" type="color"><input id="toneSICK" type="range" min="0" max="100"></div></div>
+      </div></div>
+    </div>
+    <div class="subcard">
+      <div class="muted">Цикл (повторяется по кругу)</div>
+      <div id="cycleEditor" style="margin-top:8px"></div>
+      <div class="rowbtns" style="justify-content:flex-start"><button class="small" id="addCycleDayBtn" type="button">＋ Добавить день</button><button class="small" id="removeCycleDayBtn" type="button">− Удалить</button></div>
+      <div class="rowbtns" style="justify-content:flex-end"><button id="applyScheduleBtn" type="button">Применить к месяцу</button><button class="primary" id="saveScheduleBtn" type="button">Сохранить</button></div>
+    </div>
+  </div>
+</div></div>
+
+<div class="backdrop" id="tariffBackdrop"><div class="modal">
+  <div class="mhead"><h2 style="margin:0;font-size:16px">Настроить тариф</h2><button id="closeTariffBtn" type="button">✕ Закрыть</button></div>
+  <div class="mgrid" style="margin-top:10px">
+    <div class="subcard">
+      <div class="controls" style="grid-template-columns:1fr 1fr">
+        <label>Валюта<select id="currency"><option value="€">Евро (€)</option><option value="$">Доллар ($)</option><option value="₽">Рубль (₽)</option><option value="">Условные единицы</option></select></label>
+        <label>Ставка / час<input id="rate" type="number" step="0.01" min="0"></label>
+        <label>Базовые часы месяца (без надбавки)<input id="monthlyNorm" type="number" step="0.25" min="0"></label>
+        <label>Закрыть часов в этом месяце<input id="payoutHours" type="number" step="0.25" min="0"></label>
+        <label>Будний ×<input id="multWeek" type="number" step="0.01" min="0"></label>
+        <label>Суббота ×<input id="multSat" type="number" step="0.01" min="0"></label>
+        <label>Воскресенье ×<input id="multSun" type="number" step="0.01" min="0"></label>
+        <label>Праздник ×<input id="multHol" type="number" step="0.01" min="0"></label><label>Ночные ×<input id="multNight" type="number" step="0.01" min="0"></label>
+        <label>Переработка 1-й час ×<input id="ot1" type="number" step="0.01" min="0"></label>
+        <label>Переработка 2-й час ×<input id="ot2" type="number" step="0.01" min="0"></label>
+        <label>Переработка 3-й и дальше ×<input id="ot3" type="number" step="0.01" min="0"></label>
+        <label>Остаток Депозит с прошлого месяца (ч)<input id="bankStart" type="number" step="0.25"></label>
+        <label>Остаток субботних часов (ч)<input id="satBankStart" type="number" step="0.25"></label>
+        <label>Остаток воскресных часов (ч)<input id="sunBankStart" type="number" step="0.25"></label>
+        <label>Остаток отпуска (ч)<input id="vacHours" type="number" step="0.25" min="0"></label>
+        <label>Текущий остаток отпуска<input id="vacRemainView" type="text" readonly></label>
+        <label>Начислять отпуска в год (дни)<input id="vacDaysPerYear" type="number" step="0.5" min="0"></label>
+        <label>Стандартный отпускной день (ч)<input id="vacDayHours" type="number" step="0.25" min="0"></label>
+        <label>Подоходный налог %<input id="taxRate" type="number" step="0.1" min="0" max="100"></label>
+        <label style="justify-content:flex-end"><span style="visibility:hidden">.</span><span style="display:flex;align-items:center;gap:8px;padding-top:28px"><input id="taxEnabled" type="checkbox" style="width:auto"> учитывать налог</span></label>
+      </div>
+      <div class="subcard" style="margin-top:10px">
+        <div class="muted" style="margin-bottom:8px">Категории, для которых считать налог</div>
+        <div class="controls" style="grid-template-columns:1fr 1fr">
+          <label><span style="display:flex;align-items:center;gap:8px"><input id="taxAll" type="checkbox" style="width:auto"> все категории</span></label>
+          <div></div>
+          <label><span style="display:flex;align-items:center;gap:8px"><input id="taxWeekday" type="checkbox" style="width:auto"> будни</span></label>
+          <label><span style="display:flex;align-items:center;gap:8px"><input id="taxSaturday" type="checkbox" style="width:auto"> суббота</span></label>
+          <label><span style="display:flex;align-items:center;gap:8px"><input id="taxSunday" type="checkbox" style="width:auto"> воскресенье</span></label>
+          <label><span style="display:flex;align-items:center;gap:8px"><input id="taxHoliday" type="checkbox" style="width:auto"> праздник</span></label>
+          <label><span style="display:flex;align-items:center;gap:8px"><input id="taxOvertime" type="checkbox" style="width:auto"> сверхурочные</span></label>
+          <label><span style="display:flex;align-items:center;gap:8px"><input id="taxPaidLeave" type="checkbox" style="width:auto"> оплачиваемый отпуск</span></label>
+          <label><span style="display:flex;align-items:center;gap:8px"><input id="taxSick" type="checkbox" style="width:auto"> больничный</span></label>
+        </div>
+      </div>
+      <div class="controls" style="grid-template-columns:1fr 1fr">
+
+    </div>
+    <div class="subcard">
+      <div class="hint" style="margin-top:0">Эта версия уже учитывает:<br>• настраиваемые базовые часы месяца без надбавки (например 160 / 168 / 176 ч)<br>• переработку по часам дня (после 8 ч)<br>• общий Депозит = старт + переработка месяца − выплата часов<br>• оплачиваемый отпуск в часах</div>
+      <div class="rowbtns" style="justify-content:flex-start"><button class="small" id="normByWorkdaysBtn" type="button">База = рабочие дни × 8</button><button class="small" id="resetTariffBtn" type="button">Сбросить тариф</button></div>
+      <div class="rowbtns" style="justify-content:flex-end"><button class="primary" id="saveTariffBtn" type="button">Сохранить</button></div>
+    </div>
+  </div>
+</div></div>
+
+<script>
+(()=>{try{
+const $=id=>document.getElementById(id);
+const store=(()=>{try{localStorage.setItem("__ts14","1");localStorage.removeItem("__ts14");return localStorage}catch(e){const mem={};$("errorBanner").style.display="block";$("errorBanner").textContent="⚠️ Браузер ограничивает хранилище. Приложение работает, но без сохранения после закрытия.";return{getItem:k=>mem[k]??null,setItem:(k,v)=>{mem[k]=String(v)},removeItem:k=>{delete mem[k]}}}})();
+const STORAGE_KEY=ym=>`timesheet:v28:${ym}`, SETTINGS_KEY="timesheet:v28:settings", SCHEDULE_KEY="timesheet:v28:schedule", TARIFF_KEY="timesheet:v28:tariff";
+const SHIFT={AUTO:"auto",OFF:"off",S1:"s1",S2:"s2",S3:"s3",WD:"wd"};
+const DE_STATES=[["BW","Baden-Württemberg"],["BY","Bayern"],["BE","Berlin"],["BB","Brandenburg"],["HB","Bremen"],["HH","Hamburg"],["HE","Hessen"],["MV","Mecklenburg-Vorpommern"],["NI","Niedersachsen"],["NW","Nordrhein-Westfalen"],["RP","Rheinland-Pfalz"],["SL","Saarland"],["SN","Sachsen"],["ST","Sachsen-Anhalt"],["SH","Schleswig-Holstein"],["TH","Thüringen"]].map(([code,name])=>({code,name}));
+const RU_REGIONS=[["RU-MOW","Москва"],["RU-SPE","Санкт-Петербург"],["RU-MOS","Московская область"],["RU-LEN","Ленинградская область"],["RU-KDA","Краснодарский край"],["RU-SVE","Свердловская область"],["RU-TAT","Татарстан"],["RU-NIZ","Нижегородская область"],["RU-ROS","Ростовская область"],["RU-BA","Башкортостан"]].map(([code,name])=>({code,name}));
+const COUNTRIES=[{code:"DE",name:"Германия",flag:"🇩🇪"},{code:"RU",name:"Россия",flag:"🇷🇺"}];
+const loadJSON=(k,f)=>{try{return JSON.parse(store.getItem(k)||"")}catch{return f}}, saveJSON=(k,v)=>store.setItem(k,JSON.stringify(v));
+const pad2=n=>String(n).padStart(2,"0"), fmt2=x=>(Math.round((x+Number.EPSILON)*100)/100).toFixed(2), clamp=(x,min,max)=>Math.max(min,Math.min(max,x));
+const defaultMonthValue=()=>{const d=new Date();return `${d.getFullYear()}-${pad2(d.getMonth()+1)}`}, daysInMonth=(y,m)=>new Date(y,m,0).getDate(), weekdayName=d=>new Intl.DateTimeFormat("ru-RU",{weekday:"long"}).format(d), splitHM=m=>({h:Math.floor((m||0)/60),mm:(m||0)%60}), toHours=m=>m/60;
+const defaultTariff=()=>({currency:"€",rate:24,monthlyNorm:176,payoutHours:0,mult:{weekday:1,saturday:1,sunday:1,holiday:1,night:1.25},overtime:{h1:1.25,h2:1.5,h3:2},bankStart:0,satBankStart:0,sunBankStart:0,vacHours:240,vacDaysPerYear:30,vacDayHours:8,tax:{enabled:false,rate:0,apply:{weekday:true,saturday:true,sunday:true,holiday:true,overtime:true,paid_leave:true,sick_leave:true}}});
+const loadTariff=()=>{const t=loadJSON(TARIFF_KEY,null)||defaultTariff();t.mult||={weekday:1,saturday:1,sunday:1,holiday:1,night:1.25};if(t.mult.saturday==null)t.mult.saturday=1;if(t.mult.sunday==null)t.mult.sunday=1;if(t.mult.night==null)t.mult.night=1.25;t.overtime||={h1:1.25,h2:1.5,h3:2};if(t.satBankStart==null)t.satBankStart=0;if(t.sunBankStart==null)t.sunBankStart=0;t.tax||={enabled:false,rate:0,apply:{weekday:true,saturday:true,sunday:true,holiday:true,overtime:true,paid_leave:true,sick_leave:true}};t.tax.apply||={weekday:true,saturday:true,sunday:true,holiday:true,overtime:true,paid_leave:true,sick_leave:true};return t};
+const saveTariff=t=>saveJSON(TARIFF_KEY,t);
+const defaultSchedule=()=>({enabled:false,template:"none",anchor:null,cycle:[SHIFT.OFF],autoShift:true,fillTime:false,preserveTime:true,minuteStep:5,considerNight:false,nightWindow:{start:"22:00",end:"06:00"},hoursDefault:{s1:8,s2:8,s3:8,wd:8},shiftTimes:{s1:{start:"06:00",end:"14:00"},s2:{start:"14:00",end:"22:00"},s3:{start:"22:00",end:"06:00"},wd:{start:"08:00",end:"16:00"}},colors:{s1:"#ffffff",s2:"#60a5fa",s3:"#22c55e",wd:"#f59e0b",vac:"#ec4899",uvac:"#f59e0b",sick:"#8b5cf6"},tones:{s1:55,s2:55,s3:55,wd:55,vac:55,uvac:55,sick:55}});
+const loadSchedule=()=>{const s=loadJSON(SCHEDULE_KEY,null)||defaultSchedule();s.hoursDefault||={s1:8,s2:8,s3:8,wd:8};if(s.minuteStep==null)s.minuteStep=5;if(s.considerNight==null)s.considerNight=false;s.nightWindow||={start:"22:00",end:"06:00"};s.shiftTimes||={s1:{start:"06:00",end:"14:00"},s2:{start:"14:00",end:"22:00"},s3:{start:"22:00",end:"06:00"},wd:{start:"08:00",end:"16:00"}};s.colors||={s1:"#ffffff",s2:"#60a5fa",s3:"#22c55e",wd:"#f59e0b",vac:"#ec4899",uvac:"#f59e0b",sick:"#8b5cf6"};if(s.colors.vac==null)s.colors.vac="#ec4899";if(s.colors.uvac==null)s.colors.uvac="#f59e0b";if(s.colors.sick==null)s.colors.sick="#8b5cf6";s.tones||={s1:55,s2:55,s3:55,wd:55,vac:55,uvac:55,sick:55};if(s.tones.vac==null)s.tones.vac=55;if(s.tones.uvac==null)s.tones.uvac=55;if(s.tones.sick==null)s.tones.sick=55;return s};
+const saveSchedule=s=>saveJSON(SCHEDULE_KEY,s);
+const loadSettings=()=>loadJSON(SETTINGS_KEY,{}), saveSettings=s=>saveJSON(SETTINGS_KEY,s);
+function easterSunday(year){const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),month=Math.floor((h+l-7*m+114)/31),day=((h+l-7*m+114)%31)+1;return new Date(year,month-1,day)}
+const addDays=(date,n)=>{const d=new Date(date);d.setDate(d.getDate()+n);return d};
+function bussUndBettag(year){const d=new Date(year,10,23),dow=d.getDay(),delta=(dow+4)%7;d.setDate(d.getDate()-delta);return d}
+function germanHolidays(year,stateCode){const set=new Set(), iso=(m,d)=>`${year}-${pad2(m)}-${pad2(d)}`;[iso(1,1),iso(5,1),iso(10,3),iso(12,25),iso(12,26)].forEach(x=>set.add(x));const eas=easterSunday(year), gf=addDays(eas,-2), em=addDays(eas,1), asc=addDays(eas,39), pm=addDays(eas,50);[[gf],[em],[asc],[pm]].forEach(([d])=>set.add(`${year}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`));if(["BW","BY","ST"].includes(stateCode))set.add(iso(1,6));if(["BE","MV"].includes(stateCode))set.add(iso(3,8));if(["BW","BY","HE","NW","RP","SL","SN","TH"].includes(stateCode)){const cc=addDays(eas,60);set.add(`${year}-${pad2(cc.getMonth()+1)}-${pad2(cc.getDate())}`)}if(["BB","HB","HH","MV","NI","SN","ST","SH","TH"].includes(stateCode))set.add(iso(10,31));if(["BW","BY","NW","RP","SL"].includes(stateCode))set.add(iso(11,1));if(stateCode==="SN"){const b=bussUndBettag(year);set.add(`${year}-${pad2(b.getMonth()+1)}-${pad2(b.getDate())}`)}if(stateCode==="SL")set.add(iso(8,15));return set}
+function resolveDayType(dateStr, explicitType, holidaySet){if(explicitType&&explicitType!=="auto")return explicitType;if(holidaySet&&holidaySet.has(dateStr))return"holiday";const [Y,M,D]=dateStr.split("-").map(Number),dow=new Date(Y,M-1,D).getDay();if(dow===6||dow===0)return"weekend";return"weekday"}
+const humanType=t=>({auto:"Авто",weekday:"Будни",holiday:"Праздник",paid_leave:"Отпуск оплачиваемый",unpaid_leave:"Отпуск за свой счёт",sick_leave:"Больничный",weekend:"Выходной"})[t]||"Авто";
+const shiftName=s=>({auto:"Авто",off:"Выходной",s1:"1 смена",s2:"2 смена",s3:"3 смена",wd:"Будни"})[s]||"Авто";
+const ymdToDate=ymd=>{if(!ymd)return null;const [y,m,d]=ymd.split("-").map(Number);return new Date(y,m-1,d)};
+const daysBetween=(a,b)=>Math.floor((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate())-Date.UTC(a.getFullYear(),a.getMonth(),a.getDate()))/(24*60*60*1000));
+function computeShift(dateStr, sch){if(!sch.enabled)return SHIFT.OFF;const anchor=ymdToDate(sch.anchor);if(!anchor)return SHIFT.OFF;const dt=ymdToDate(dateStr);if(!dt)return SHIFT.OFF;if(sch.template==="five_day"){const dow=dt.getDay();return (dow>=1&&dow<=5)?SHIFT.WD:SHIFT.OFF}if(sch.template==="week_s1_s2"){const dow=dt.getDay();if(!(dow>=1&&dow<=5))return SHIFT.OFF;const diff=daysBetween(anchor,dt),week=Math.floor(diff/7);return (Math.abs(week)%2===0)?SHIFT.S1:SHIFT.S2}const cycle=sch.cycle&&sch.cycle.length?sch.cycle:[SHIFT.OFF],idx=((daysBetween(anchor,dt)%cycle.length)+cycle.length)%cycle.length;return cycle[idx]||SHIFT.OFF}
+const effectiveShift=(dateStr,row,sch)=>{const s=row.shift||SHIFT.AUTO;return s!==SHIFT.AUTO?s:(!sch.autoShift?SHIFT.OFF:computeShift(dateStr,sch))};
+const hexToRgb=hex=>!hex||hex[0]!=="#"||hex.length!==7?{r:255,g:255,b:255}:{r:parseInt(hex.slice(1,3),16),g:parseInt(hex.slice(3,5),16),b:parseInt(hex.slice(5,7),16)}, rgba=(c,a)=>`rgba(${c.r},${c.g},${c.b},${a})`, toneToBg=t=>0.06+clamp(t,0,100)/100*0.28;
+function applyScheduleColors(sch){[["s1","--s1"],["s2","--s2"],["s3","--s3"],["wd","--wd"]].forEach(([k,css])=>{const c=hexToRgb((sch.colors&&sch.colors[k])||"#ffffff"),t=(sch.tones&&sch.tones[k]!=null)?sch.tones[k]:55;document.documentElement.style.setProperty(css,rgba(c,toneToBg(t)))});const cv=hexToRgb((sch.colors&&sch.colors.vac)||"#ec4899"),tv=(sch.tones&&sch.tones.vac!=null)?sch.tones.vac:55,cu=hexToRgb((sch.colors&&sch.colors.uvac)||"#f59e0b"),tu=(sch.tones&&sch.tones.uvac!=null)?sch.tones.uvac:55,cs=hexToRgb((sch.colors&&sch.colors.sick)||"#8b5cf6"),ts=(sch.tones&&sch.tones.sick!=null)?sch.tones.sick:55;document.documentElement.style.setProperty("--vac",rgba(cv,toneToBg(tv)));document.documentElement.style.setProperty("--vacBorder",rgba(cv,0.68));document.documentElement.style.setProperty("--uVac",rgba(cu,toneToBg(tu)));document.documentElement.style.setProperty("--uVacBorder",rgba(cu,0.68));document.documentElement.style.setProperty("--sick",rgba(cs,toneToBg(ts)));document.documentElement.style.setProperty("--sickBorder",rgba(cs,0.68))}
+function updatePctLabels(s){$("pctS1").textContent=`${s.tones.s1}%`;$("pctS2").textContent=`${s.tones.s2}%`;$("pctS3").textContent=`${s.tones.s3}%`;$("pctWD").textContent=`${s.tones.wd}%`;if($("pctVAC"))$("pctVAC").textContent=`${s.tones.vac}%`;if($("pctUVAC"))$("pctUVAC").textContent=`${s.tones.uvac}%`;if($("pctSICK"))$("pctSICK").textContent=`${s.tones.sick}%`}
+function ensureRow(data,dateStr){if(!data[dateStr])data[dateStr]={workMin:0,leaveMin:0,leaveSource:"none",type:"auto",shift:SHIFT.AUTO};if(!("leaveSource" in data[dateStr]))data[dateStr].leaveSource="none";return data[dateStr]}
+const stepMinutes=(v,d)=>clamp((v||0)+d,0,24*60);
+
+const currentMinuteStep=()=>{const s=loadSchedule();return parseInt(s.minuteStep||5,10)||5};
+const isSpecialType=t=>["paid_leave","unpaid_leave","sick_leave"].includes(t);
+const shiftKeyByValue=v=>v===SHIFT.S1?"s1":v===SHIFT.S2?"s2":v===SHIFT.S3?"s3":"wd";
+function getStandardMinutes(dateStr,row,sch){const sh=effectiveShift(dateStr,row,sch), key=shiftKeyByValue(sh), hh=parseFloat((sch.hoursDefault&&sch.hoursDefault[key])||8)||8;return Math.round(hh*60)}
+function rebalanceSpecialDay(row,dateStr,sch,changed){
+  const std=getStandardMinutes(dateStr,row,sch);
+  row.workMin = Math.max(0, Math.min(std, row.workMin||0));
+  row.leaveMin = Math.max(0, Math.min(std, row.leaveMin||0));
+  if(!isSpecialType(row.type)) return;
+  if(changed==="type"){
+    if(row.leaveMin<=0) row.leaveMin = std;
+    row.workMin = Math.max(0, std - row.leaveMin);
+  }else if(changed==="leave"){
+    row.leaveMin = Math.max(0, Math.min(std, row.leaveMin||0));
+    row.workMin = Math.max(0, std - row.leaveMin);
+  }else if(changed==="work"){
+    row.workMin = Math.max(0, Math.min(std, row.workMin||0));
+    row.leaveMin = Math.max(0, std - row.workMin);
+  }
+}
+
+const parseTimeToMin=s=>{if(!s||!String(s).includes(":"))return 0;const [h,m]=String(s).split(":").map(Number);return (h||0)*60+(m||0)};
+const overlap=(a1,a2,b1,b2)=>Math.max(0,Math.min(a2,b2)-Math.max(a1,b1));
+function calcNightMinutes(dateStr,row,sch){
+  if(!sch.considerNight) return 0;
+  const key=shiftKeyByValue(effectiveShift(dateStr,row,sch));
+  const cfg=(sch.shiftTimes&&sch.shiftTimes[key])||{start:"08:00",end:"16:00"};
+  const start=parseTimeToMin(cfg.start), dur=Math.max(0,row.workMin||0), end=start+dur;
+  const nw=(sch.nightWindow)||{start:"22:00",end:"06:00"};
+  const nStart=parseTimeToMin(nw.start), nEnd=parseTimeToMin(nw.end);
+  let total=0;
+  if(nStart===nEnd) return 0;
+  for(const off of [0,1440]){
+    if(nStart < nEnd){
+      total += overlap(start,end,off+nStart,off+nEnd);
+    }else{
+      total += overlap(start,end,off+nStart,off+1440);
+      total += overlap(start,end,off+0,off+nEnd);
+    }
+  }
+  return total;
+}
+
+const monthEl=$("month"), countryEl=$("country"), regionEl=$("region"), pillFlagEl=$("pillFlag"), pillTextEl=$("pillText"), listEl=$("list"), kpiWork=$("kpiWork"), kpiOver=$("kpiOver"), kpiBank=$("kpiBank"), kpiPay=$("kpiPay"), kpiNet=$("kpiNet"), sideHint=$("sideHint");
+function buildCountryRegion(){countryEl.innerHTML="";COUNTRIES.forEach(c=>{const o=document.createElement("option");o.value=c.code;o.textContent=c.name;countryEl.appendChild(o)});const st=loadSettings();countryEl.value=st.country||"DE";function fillRegions(){const cc=countryEl.value, arr=cc==="DE"?DE_STATES:RU_REGIONS;regionEl.innerHTML="";arr.forEach(r=>{const o=document.createElement("option");o.value=r.code;o.textContent=r.name;regionEl.appendChild(o)});regionEl.value=st.region||(cc==="DE"?"BW":"RU-MOW");if(!regionEl.value&&regionEl.options.length)regionEl.selectedIndex=0;updatePill()}fillRegions();countryEl.onchange=()=>{const s=loadSettings();s.country=countryEl.value;saveSettings(s);fillRegions();build()};regionEl.onchange=()=>{const s=loadSettings();s.country=countryEl.value;s.region=regionEl.value;saveSettings(s);updatePill();build()}}
+function updatePill(){const cc=countryEl.value,c=COUNTRIES.find(x=>x.code===cc),arr=cc==="DE"?DE_STATES:RU_REGIONS,r=arr.find(x=>x.code===regionEl.value);pillFlagEl.textContent=c?c.flag:"🌍";pillTextEl.textContent=`${c?c.name:""} • ${r?r.name:""}`}
+
+function nextMonthValue(ym){const [y,m]=ym.split("-").map(Number);const d=new Date(y,m-1,1);d.setMonth(d.getMonth()+1);return `${d.getFullYear()}-${pad2(d.getMonth()+1)}`}
+function prevMonthValue(ym){const [y,m]=ym.split("-").map(Number);const d=new Date(y,m-1,1);d.setMonth(d.getMonth()-1);return `${d.getFullYear()}-${pad2(d.getMonth()+1)}`}
+const META_KEY=ym=>`timesheet:meta:${ym}`;
+function loadMeta(ym){return loadJSON(META_KEY(ym),{})}
+function saveMeta(ym,v){saveJSON(META_KEY(ym),v)}
+function monthStartBanks(ym,tariff){
+  const prev = loadMeta(prevMonthValue(ym));
+  return {
+    bank: prev.bankRemain!=null ? prev.bankRemain : (parseFloat(tariff.bankStart)||0),
+    sun: prev.sunRemain!=null ? prev.sunRemain : (parseFloat(tariff.sunBankStart)||0),
+    vac: prev.vacRemain!=null ? prev.vacRemain : (parseFloat(tariff.vacHours)||0)
+  };
+}
+function seedMonthBySchedule(ym,data,sch){
+  if(!(sch&&sch.fillTime&&sch.autoShift)) return data;
+  const [Y,M]=ym.split("-").map(Number);
+  for(let d=1; d<=daysInMonth(Y,M); d++){
+    const ds=`${Y}-${pad2(M)}-${pad2(d)}`, row=ensureRow(data,ds);
+    if((row.workMin||0)>0 || (row.leaveMin||0)>0 || row.type!=="auto") continue;
+    row.shift = SHIFT.AUTO;
+    const sh = computeShift(ds,sch);
+    const key = shiftKeyByValue(sh);
+    const hh = parseFloat((sch.hoursDefault&&sch.hoursDefault[key])||0)||0;
+    if(sh!==SHIFT.OFF && hh>0) row.workMin = Math.round(hh*60);
+  }
+  return data;
+}
+
+function monthNormByWorkdays(){const ym=monthEl.value||defaultMonthValue(),[Y,M]=ym.split("-").map(Number), hol=countryEl.value==="DE"?germanHolidays(Y,regionEl.value):new Set();let days=0;for(let d=1;d<=daysInMonth(Y,M);d++){const dt=new Date(Y,M-1,d),dow=dt.getDay(),ds=`${Y}-${pad2(M)}-${pad2(d)}`;if(dow>=1&&dow<=5&&!hol.has(ds))days++}return days*8}
+
+function build(){const ym=monthEl.value||defaultMonthValue(),[Y,M]=ym.split("-").map(Number),n=daysInMonth(Y,M),data=seedMonthBySchedule(ym,loadJSON(STORAGE_KEY(ym),{}),loadSchedule()),sch=loadSchedule(),tariff=loadTariff(),holidaySet=countryEl.value==="DE"?germanHolidays(Y,regionEl.value):new Set(),settings=loadSettings();applyScheduleColors(sch);updatePctLabels(sch);listEl.innerHTML="";
+let totalWork=0,totalPaidLeave=0,pay=0,totalSat=0,totalSun=0,totalHol=0,totalWeek=0,totalSick=0; let calCells=[];
+let dedVac=0,dedBank=0,dedSun=0,paidLeavePay=0,sickPay=0,satPay=0,sunPay=0,holPay=0;let taxable={weekday:0,saturday:0,sunday:0,holiday:0,overtime:0,paid_leave:0,sick_leave:0}; const startBanks=monthStartBanks(ym,tariff);
+for(let day=1;day<=n;day++){
+  const ds=`${Y}-${pad2(M)}-${pad2(day)}`,d=new Date(Y,M-1,day),row=ensureRow(data,ds),type=resolveDayType(ds,row.type,holidaySet),shift=effectiveShift(ds,row,sch),work=row.workMin||0,leave=row.leaveMin||0,workHM=splitHM(work),leaveHM=splitHM(leave),stdDayMin=getStandardMinutes(ds,row,sch),overtimeDayMin=(type==="weekday"?Math.max(0,work-stdDayMin):0),nightDayMin=calcNightMinutes(ds,row,sch),otDayHM=splitHM(overtimeDayMin),nightDayHM=splitHM(nightDayMin);
+  totalWork+=work;
+  const dowNum=d.getDay();
+  let dayMult=tariff.mult.weekday||1;
+  if(type==="holiday"){dayMult=tariff.mult.holiday||1; totalHol+=work; holPay += (work/60)*tariff.rate*dayMult;}
+  else if(type==="weekend" && dowNum===6){dayMult=tariff.mult.saturday||1; totalSat+=work; satPay += (work/60)*tariff.rate*dayMult;}
+  else if(type==="weekend" && dowNum===0){dayMult=tariff.mult.sunday||1; totalSun+=work; sunPay += (work/60)*tariff.rate*dayMult;}
+  else { totalWeek+=work; }
+  if(type==="paid_leave"){
+    totalPaidLeave+=leave;
+    paidLeavePay += (leave/60)*tariff.rate*(tariff.mult.weekday||1);
+    dedVac += leave;
+    taxable.paid_leave += (leave/60)*tariff.rate*(tariff.mult.weekday||1);
+    pay += (leave/60)*tariff.rate*(tariff.mult.weekday||1);
+  }else if(type==="sick_leave"){
+    totalSick+=leave;
+    sickPay += (leave/60)*tariff.rate*(tariff.mult.weekday||1);
+    taxable.sick_leave += (leave/60)*tariff.rate*(tariff.mult.weekday||1);
+    pay += (leave/60)*tariff.rate*(tariff.mult.weekday||1);
+  }else if(type==="unpaid_leave"){
+    const src = row.leaveSource||"overtime";
+    if(src==="overtime" || src==="saturday") dedBank += leave;
+    else if(src==="sunday" || src==="holiday") dedSun += leave;
+    pay += (work/60)*tariff.rate*dayMult;
+  }else{
+    const src = row.leaveSource||"none";
+    if(src==="vacation") dedVac += leave;
+    else if(src==="overtime" || src==="saturday") dedBank += leave;
+    else if(src==="sunday" || src==="holiday") dedSun += leave;
+    pay += (work/60)*tariff.rate*dayMult;
+  }
+  if(type==="holiday") taxable.holiday += (work/60)*tariff.rate*dayMult;
+  else if(type==="weekend" && dowNum===6) taxable.saturday += (work/60)*tariff.rate*dayMult;
+  else if(type==="weekend" && dowNum===0) taxable.sunday += (work/60)*tariff.rate*dayMult;
+  else if(type!=="paid_leave" && type!=="sick_leave") taxable.weekday += (work/60)*tariff.rate*dayMult;
+
+  const shiftClass=type==="holiday"?"":(shift===SHIFT.S1?"shift-s1":shift===SHIFT.S2?"shift-s2":shift===SHIFT.S3?"shift-s3":shift===SHIFT.WD?"shift-wd":""); const typeClass=type==="holiday"?"holiday":(type==="weekend"?(dowNum===0?"sunday":"weekend"):""), leaveClass="", shiftTag=(type==="holiday"||shift===SHIFT.OFF)?"" : `<span class="tag">${shiftName(shift)}</span>`;
+  const el=document.createElement("div");el.className=`day ${shiftClass}${leaveClass}`;el.innerHTML=`
+<div class="dayRowFix">
+  <div class="dayMetaFix">
+    <div class="date">${pad2(day)}.${pad2(M)}.${Y}</div>
+    <div class="dow">${weekdayName(d)}</div>
+    <div class="tags"><span class="tag ${typeClass} ${type==="paid_leave"?"paidleave":(type==="unpaid_leave"?"unpaidleave":(type==="sick_leave"?"sickleave":""))}">${humanType(row.type==="auto"?type:row.type)}</span>${shiftTag}</div>
+  </div>
+  <div>
+<div class="timeStackFix">
+  <div class="timeItemFix">
+    <div class="lab">Работа ч</div>
+    <div class="step">
+      <div class="btn" data-action="workH-" data-date="${ds}">−</div>
+      <div class="val">${workHM.h}</div>
+      <div class="btn" data-action="workH+" data-date="${ds}">+</div>
+    </div>
+  </div>
+  <div class="timeItemFix">
+    <div class="lab">Работа мин</div>
+    <div class="step">
+      <div class="btn" data-action="workM-" data-date="${ds}">−</div>
+      <div class="val">${pad2(workHM.mm)}</div>
+      <div class="btn" data-action="workM+" data-date="${ds}">+</div>
+    </div>
+  </div>
+</div>
+<div class="leaveRowFix">
+  <div class="timeItemFix">
+    <div class="lab">${row.type==="sick_leave"?"Больничный ч":"Отпуск/отгул ч"}</div>
+    <div class="step">
+      <div class="btn" data-action="leaveH-" data-date="${ds}">−</div>
+      <div class="val">${leaveHM.h}</div>
+      <div class="btn" data-action="leaveH+" data-date="${ds}">+</div>
+    </div>
+  </div>
+  <div class="timeItemFix leaveMinBlock">
+    <div class="lab">${row.type==="sick_leave"?"Больничный мин":"Отпуск/отгул мин"}</div>
+    <div class="step">
+      <div class="btn" data-action="leaveM-" data-date="${ds}">−</div>
+      <div class="val">${pad2(leaveHM.mm)}</div>
+      <div class="btn" data-action="leaveM+" data-date="${ds}">+</div>
+    </div>
+  </div>
+</div>
+<div class="selectStackFix controlsBottom" style="margin-top:10px">
+      <select class="selectSmall bottomControl" data-action="type" data-date="${ds}" title="День">
+        <option value="auto">⚙ День</option>
+        <option value="weekday">⚙ День Будний</option>
+        <option value="holiday">⚙ День Праздник</option>
+        <option value="paid_leave">⚙ День Отпуск оплачиваемый</option>
+        <option value="unpaid_leave">⚙ День Отпуск за свой счёт</option>
+        <option value="sick_leave">⚙ День Больничный</option>
+      </select>
+      <select class="selectSmall bottomControl" data-action="shift" data-date="${ds}" title="Смена">
+        <option value="auto">⚙ Смена</option>
+        <option value="off">⚙ Смена Выходной</option>
+        <option value="s1">⚙ Смена 1</option>
+        <option value="s2">⚙ Смена 2</option>
+        <option value="s3">⚙ Смена 3</option>
+        <option value="wd">⚙ Смена Рабочий день</option>
+      </select>
+      <select class="selectSmall bottomControl" data-action="source" data-date="${ds}">
+        <option value="none">Источник: нет</option>
+        <option value="vacation">Источник: отпускные часы</option>
+        <option value="overtime">Источник: депозит / переработка / суббота</option>
+        <option value="sunday">Источник: воскресенье / праздничные</option>
+      </select>
+    </div>
+  </div>
+</div>`;el.querySelector('[data-action="shift"]').value=row.shift||"auto";el.querySelector('[data-action="type"]').value=row.type||"auto";const srcSel=el.querySelector('[data-action="source"]');srcSel.value=row.leaveSource||"none"; if(row.leaveSource) srcSel.setAttribute("data-current", row.leaveSource); else srcSel.removeAttribute("data-current");const leaveRowEl=el.querySelector('.leaveRowFix');const controls=el.querySelector('.selectStackFix');const contentWrap=el.querySelector('.dayRowFix > div:nth-child(2)');const leaveMinBlock=leaveRowEl.querySelector('.leaveMinBlock');leaveRowEl.classList.remove('singleLeave','unpaidLeaveRow');contentWrap.classList.remove('specialContentPad');
+if(row.type==="paid_leave"){
+  srcSel.style.display="none";
+  leaveRowEl.style.display="grid";
+  leaveRowEl.classList.add('singleLeave');
+  controls.classList.remove("controlsBottom");
+  controls.classList.add("controlsRight");controls.style.top="10px";controls.style.right="8px";
+  contentWrap.classList.add('specialContentPad');
+}else if(row.type==="sick_leave"){
+  srcSel.style.display="none";
+  leaveRowEl.style.display="grid";
+  leaveRowEl.classList.add('singleLeave');
+  controls.classList.remove("controlsBottom");
+  controls.classList.add("controlsRight");controls.style.top="10px";controls.style.right="8px";
+  contentWrap.classList.add('specialContentPad');
+}else if(row.type==="unpaid_leave"){
+  leaveRowEl.style.display="grid";
+  leaveRowEl.classList.add('unpaidLeaveRow');
+  controls.classList.remove("controlsBottom");
+  controls.classList.add("controlsRight");controls.style.top="10px";controls.style.right="8px";
+  contentWrap.classList.add('specialContentPad');
+  if(leaveMinBlock){
+    leaveMinBlock.innerHTML = `<div class="lab">Источник</div>`;
+    srcSel.classList.add("sourceInlineBtn");
+    srcSel.innerHTML=`<option value="overtime">⚙ Из переработок / депозита</option><option value="sunday">⚙ Из воскресений / праздников</option>`;
+    srcSel.value=(["overtime","sunday"].includes(row.leaveSource)?row.leaveSource:"overtime");
+    srcSel.style.display="";
+    leaveMinBlock.appendChild(srcSel); leaveMinBlock.style.alignSelf='start'; leaveMinBlock.style.alignSelf='start';
+  }
+}else{
+  if(leaveMinBlock && srcSel.parentElement===leaveMinBlock){ controls.appendChild(srcSel); }
+  srcSel.style.display="none";
+  leaveRowEl.style.display="none";
+  controls.classList.remove("controlsRight");
+  controls.classList.add("controlsBottom");
+}
+if(!isSpecialType(row.type) && (overtimeDayMin>0 || nightDayMin>0)){
+const info=document.createElement("div");
+info.className="leaveRowFix";
+let infoHtml="";
+if(overtimeDayMin>0){
+  infoHtml += `<div class="timeItemFix"><div class="lab">Переработка ч</div><div class="step"><div class="btn" style="visibility:hidden">−</div><div class="val">${otDayHM.h}</div><div class="btn" style="visibility:hidden">+</div></div></div><div class="timeItemFix"><div class="lab">Переработка мин</div><div class="step"><div class="btn" style="visibility:hidden">−</div><div class="val">${pad2(otDayHM.mm)}</div><div class="btn" style="visibility:hidden">+</div></div></div>`;
+}
+if(nightDayMin>0){
+  infoHtml += `<div class="nightNoteOnly">${sch.considerNight ? '* учитываются ночные часы' : '* ночные часы не учитываются'}</div>`;
+}
+info.innerHTML=infoHtml;
+leaveRowEl.after(info);
+}
+if(controls.classList.contains('controlsRight') && row.type!=='unpaid_leave'){srcSel.style.display='none';}
+if(settings.view==="calendar"){
+  const label = row.type==="paid_leave" ? "Отп" : row.type==="unpaid_leave" ? "Отг" : row.type==="sick_leave" ? "Бол" : (work>0 ? ((workHM.h||0)+(workHM.mm?","+pad2(workHM.mm):""))+"ч" : ((type==="holiday")?"Празд":(dowNum===0||dowNum===6?"Вых":"—")));
+  const cls = `${type==="holiday"?"holiday":""} ${row.type==="paid_leave"?"paidleave":row.type==="unpaid_leave"?"unpaidleave":row.type==="sick_leave"?"sickleave":(type==="weekend"?"weekend":"")}`;
+  calCells.push(`<div class="calCell ${cls}" data-date="${ds}"><div class="d">${day}</div><div class="s">${label}</div></div>`);
+}else{
+  listEl.appendChild(el)
+}
+}
+if(settings.view==="calendar"){
+  const dows=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+  const first=new Date(Y,M-1,1); let firstCol=(first.getDay()+6)%7;
+  const wrap=document.createElement("div"); wrap.className="calendarWrap";
+  dows.forEach(x=>{const h=document.createElement("div"); h.className="calDow"; h.textContent=x; wrap.appendChild(h)});
+  for(let i=0;i<firstCol;i++){const empty=document.createElement("div"); wrap.appendChild(empty);}
+  calCells.forEach(htmlCell=>{const t=document.createElement("template"); t.innerHTML=htmlCell.trim(); wrap.appendChild(t.content.firstChild)});
+  listEl.appendChild(wrap);
+  wrap.querySelectorAll(".calCell").forEach(cell=>cell.addEventListener("click",(e)=>{e.preventDefault(); e.stopPropagation(); if(window.__openDayPreview){ window.__openDayPreview(cell.dataset.date); }}));
+}
+const baseMin=Math.min(totalWeek,Math.max(0,(parseFloat(tariff.monthlyNorm)||0)*60));
+const monthOverMin=Math.max(0,totalWeek-baseMin);
+const payoutMin=Math.max(0,(parseFloat(tariff.payoutHours)||0)*60);
+const overHours=toHours(monthOverMin), h1=Math.min(1,overHours), h2=Math.min(1,Math.max(0,overHours-1)), h3=Math.max(0,overHours-2), ot=tariff.overtime||{h1:1.25,h2:1.5,h3:2};
+const overPremiumPay = h1*tariff.rate*(ot.h1-1)+h2*tariff.rate*(ot.h2-1)+h3*tariff.rate*(ot.h3-1);const nightPremiumPay = (sch.considerNight?toHours([...Array(n).keys()].reduce((a,idx)=>{const dd=idx+1,dds=`${Y}-${pad2(M)}-${pad2(dd)}`,rr=ensureRow(data,dds);return a+calcNightMinutes(dds,rr,sch)},0)):0)*tariff.rate*((tariff.mult.night||1)-1);
+pay += overPremiumPay + nightPremiumPay;taxable.overtime += overPremiumPay + nightPremiumPay; const payoutPay = (parseFloat(tariff.payoutHours)||0) * tariff.rate; pay += payoutPay; taxable.overtime += payoutPay;
+const taxCfg = tariff.tax||{enabled:false,rate:0,apply:{}};
+const taxableTotal = (taxCfg.apply.weekday?taxable.weekday:0)+(taxCfg.apply.saturday?taxable.saturday:0)+(taxCfg.apply.sunday?taxable.sunday:0)+(taxCfg.apply.holiday?taxable.holiday:0)+(taxCfg.apply.overtime?taxable.overtime:0)+(taxCfg.apply.paid_leave?taxable.paid_leave:0)+(taxCfg.apply.sick_leave?taxable.sick_leave:0);
+const taxValue = taxCfg.enabled ? taxableTotal*((parseFloat(taxCfg.rate)||0)/100) : 0;
+const netPay = pay - taxValue;
+
+const bankRemain = startBanks.bank + toHours(monthOverMin) + toHours(totalSat) - (parseFloat(tariff.payoutHours)||0) - toHours(dedBank);
+const vacRemain = startBanks.vac - toHours(dedVac);
+const sunRemain = startBanks.sun + toHours(totalSun) + toHours(totalHol) - toHours(dedSun);
+
+kpiWork.textContent=`${fmt2(toHours(totalWork))} ч`;
+kpiOver.textContent=`${fmt2(toHours(monthOverMin))} ч`;
+kpiBank.textContent=`${fmt2(bankRemain)} ч`;
+kpiPay.textContent=`${fmt2(pay)} ${tariff.currency||""}`;if($("kpiNet"))$("kpiNet").textContent=`${fmt2(netPay)} ${tariff.currency||""}`;
+sideHint.textContent=`Остаток отпуска: ${fmt2(vacRemain)} ч (${fmt2(vacRemain/(parseFloat(tariff.vacDayHours)||8))} дн) • Базовые часы: ${fmt2(parseFloat(tariff.monthlyNorm)||0)} ч • Закрыть часов: ${fmt2(parseFloat(tariff.payoutHours)||0)} ч`;
+
+$("sumBaseH").textContent = fmt2(toHours(baseMin));
+$("sumBasePay").textContent = `${fmt2((toHours(baseMin))*tariff.rate)} ${tariff.currency||""}`;
+$("sumOverH").textContent = fmt2(toHours(monthOverMin));
+$("sumOverPay").textContent = `${fmt2((toHours(monthOverMin))*tariff.rate + overPremiumPay)} ${tariff.currency||""}`;
+$("sumSunHolH").textContent = fmt2(toHours(totalSun + totalHol));
+$("sumSunHolPay").textContent = `${fmt2(sunPay + holPay)} ${tariff.currency||""}`;
+$("sumVacH").textContent = fmt2(toHours(totalPaidLeave));
+$("sumVacPay").textContent = `${fmt2(paidLeavePay)} ${tariff.currency||""}`;
+$("sumDedVac").textContent = `−${fmt2(toHours(dedVac))}`;
+$("sumDedBank").textContent = `−${fmt2(toHours(dedBank))}`;
+$("sumDedSun").textContent = `−${fmt2(toHours(dedSun))}`;
+$("banksHint").textContent = `Остатки: отпуск ${fmt2(vacRemain)} ч • депозит ${fmt2(bankRemain)} ч • воскресенья/праздничные ${fmt2(sunRemain)} ч`; saveMeta(ym,{bankRemain:bankRemain,vacRemain:vacRemain,sunRemain:sunRemain});if($("vacRemainView"))$("vacRemainView").value=`${fmt2(vacRemain)} ч`;if($("taxHint"))$("taxHint").textContent=`Налог: ${fmt2(taxValue)} ${tariff.currency||""} • Нетто: ${fmt2(netPay)} ${tariff.currency||""}`;
+
+listEl.querySelectorAll("[data-action]").forEach(el=>{const act=el.dataset.action;if(["workH-","workH+","workM-","workM+","leaveH-","leaveH+","leaveM-","leaveM+"].includes(act))el.addEventListener("click",onStep);if(act==="shift")el.addEventListener("change",onShift);if(act==="type")el.addEventListener("change",onType);if(act==="source")el.addEventListener("change",onSource)})
+}
+function saveMonthData(ym,data){saveJSON(STORAGE_KEY(ym),data)}
+function onStep(e){const ym=monthEl.value||defaultMonthValue(),data=loadJSON(STORAGE_KEY(ym),{}),dateStr=e.target.dataset.date,row=ensureRow(data,dateStr),act=e.target.dataset.action,sch=loadSchedule(),mstep=currentMinuteStep();if(act==="workH+")row.workMin=stepMinutes(row.workMin,60);if(act==="workH-")row.workMin=stepMinutes(row.workMin,-60);if(act==="workM+")row.workMin=stepMinutes(row.workMin,mstep);if(act==="workM-")row.workMin=stepMinutes(row.workMin,-mstep);if(act==="leaveH+")row.leaveMin=stepMinutes(row.leaveMin,60);if(act==="leaveH-")row.leaveMin=stepMinutes(row.leaveMin,-60);if(act==="leaveM+")row.leaveMin=stepMinutes(row.leaveMin,mstep);if(act==="leaveM-")row.leaveMin=stepMinutes(row.leaveMin,-mstep);if(isSpecialType(row.type)){if(act.startsWith("work"))rebalanceSpecialDay(row,dateStr,sch,"work");if(act.startsWith("leave"))rebalanceSpecialDay(row,dateStr,sch,"leave");}saveMonthData(ym,data);build()}
+function onShift(e){const ym=monthEl.value||defaultMonthValue(),data=loadJSON(STORAGE_KEY(ym),{}),row=ensureRow(data,e.target.dataset.date);row.shift=e.target.value;saveMonthData(ym,data);build()}
+function onType(e){const ym=monthEl.value||defaultMonthValue(),data=loadJSON(STORAGE_KEY(ym),{}),dateStr=e.target.dataset.date,row=ensureRow(data,dateStr),old=row.type,newType=e.target.value,sch=loadSchedule();row.type=newType;if(newType==="paid_leave")row.leaveSource="vacation";else if(newType==="unpaid_leave" && (!row.leaveSource||row.leaveSource==="none"||row.leaveSource==="vacation"))row.leaveSource="overtime";else if(newType==="sick_leave")row.leaveSource="none";else row.leaveSource="none";if(isSpecialType(newType)){if(!isSpecialType(old)&&(!row.leaveMin||row.leaveMin===0)){row.leaveMin=getStandardMinutes(dateStr,row,sch);}rebalanceSpecialDay(row,dateStr,sch,"type");}else{row.leaveMin=0;}saveMonthData(ym,data);build()}
+function onSource(e){const ym=monthEl.value||defaultMonthValue(),data=loadJSON(STORAGE_KEY(ym),{}),row=ensureRow(data,e.target.dataset.date);row.leaveSource=e.target.value;saveMonthData(ym,data);build()}
+const scheduleBackdrop=$("scheduleBackdrop");
+$("scheduleBtn").onclick=()=>{renderScheduleForm(); if($("fillTime")) $("fillTime").checked=false; scheduleBackdrop.classList.add("open"); if(window.__ts112_fullSize) window.__ts112_fullSize("scheduleBackdrop")};$("closeScheduleBtn").onclick=()=>{saveScheduleFromForm();scheduleBackdrop.classList.remove("open"); if(window.__ts112_release) window.__ts112_release("scheduleBackdrop"); build()};scheduleBackdrop.addEventListener("click",e=>{if(e.target===scheduleBackdrop){saveScheduleFromForm();scheduleBackdrop.classList.remove("open"); if(window.__ts112_release) window.__ts112_release("scheduleBackdrop"); build()}});
+function renderCycleEditor(s){const wrap=$("cycleEditor");wrap.innerHTML="";const cycle=s.cycle&&s.cycle.length?s.cycle:[SHIFT.OFF];if(s.template==="five_day"){const div=document.createElement("div");div.className="hint";div.textContent="Пятидневная неделя: Пн–Пт рабочие, Сб–Вс выходные.";wrap.appendChild(div);return}if(s.template==="week_s1_s2"){const div=document.createElement("div");div.className="hint";div.textContent="Шаблон под твой график: 1-я неделя — 1 смена Пн–Пт, Сб–Вс выходные; 2-я неделя — 2 смена Пн–Пт, Сб–Вс выходные.";wrap.appendChild(div);return}cycle.forEach((v,i)=>{const row=document.createElement("div");row.className="cycleRow";row.innerHTML=`<div><div class="idx">День ${i+1}</div><div style="font-weight:700">${shiftName(v)}</div></div><select data-idx="${i}"><option value="off">Выходной</option><option value="s1">1 смена</option><option value="s2">2 смена</option><option value="s3">3 смена</option><option value="wd">Рабочий день</option></select>`;row.querySelector("select").value=v;row.querySelector("select").addEventListener("change",e=>{const s2=loadSchedule();s2.template="custom";s2.enabled=true;s2.cycle[i]=e.target.value;saveSchedule(s2);renderCycleEditor(s2);build()});wrap.appendChild(row)})}
+function renderScheduleForm(){const s=loadSchedule();$("template").value=s.template;$("anchor").value=s.anchor||"";$("autoShift").checked=!!s.autoShift;$("fillTime").checked=!!s.fillTime;$("preserveTime").checked=!!s.preserveTime;$("hS1").value=s.hoursDefault.s1;$("hS2").value=s.hoursDefault.s2;$("hS3").value=s.hoursDefault.s3;$("hWD").value=s.hoursDefault.wd;$("minuteStep").value=s.minuteStep||5;$("considerNight").checked=!!s.considerNight;$("startS1").value=s.shiftTimes.s1.start;$("endS1").value=s.shiftTimes.s1.end;$("startS2").value=s.shiftTimes.s2.start;$("endS2").value=s.shiftTimes.s2.end;$("startS3").value=s.shiftTimes.s3.start;$("endS3").value=s.shiftTimes.s3.end;$("startWD").value=s.shiftTimes.wd.start;$("endWD").value=s.shiftTimes.wd.end;$("colorS1").value=s.colors.s1;$("colorS2").value=s.colors.s2;$("colorS3").value=s.colors.s3;$("colorWD").value=s.colors.wd;if($("colorVAC"))$("colorVAC").value=s.colors.vac;if($("colorUVAC"))$("colorUVAC").value=s.colors.uvac;if($("colorSICK"))$("colorSICK").value=s.colors.sick;$("toneS1").value=s.tones.s1;$("toneS2").value=s.tones.s2;$("toneS3").value=s.tones.s3;$("toneWD").value=s.tones.wd;if($("toneVAC"))$("toneVAC").value=s.tones.vac;if($("toneUVAC"))$("toneUVAC").value=s.tones.uvac;if($("toneSICK"))$("toneSICK").value=s.tones.sick;updatePctLabels(s);renderCycleEditor(s)}
+function saveScheduleFromForm(){const s=loadSchedule();s.template=$("template").value;s.enabled=s.template!=="none";s.anchor=$("anchor").value||s.anchor;s.autoShift=$("autoShift").checked;s.fillTime=$("fillTime").checked;s.preserveTime=$("preserveTime").checked;s.minuteStep=parseInt($("minuteStep").value||5,10)||5;s.considerNight=$("considerNight").checked;s.nightWindow={start:$("nightStart").value||"22:00",end:$("nightEnd").value||"06:00"};s.hoursDefault={s1:parseFloat($("hS1").value||8)||8,s2:parseFloat($("hS2").value||8)||8,s3:parseFloat($("hS3").value||8)||8,wd:parseFloat($("hWD").value||8)||8};s.shiftTimes={s1:{start:$("startS1").value||"06:00",end:$("endS1").value||"14:00"},s2:{start:$("startS2").value||"14:00",end:$("endS2").value||"22:00"},s3:{start:$("startS3").value||"22:00",end:$("endS3").value||"06:00"},wd:{start:$("startWD").value||"08:00",end:$("endWD").value||"16:00"}};s.colors={s1:$("colorS1").value,s2:$("colorS2").value,s3:$("colorS3").value,wd:$("colorWD").value,vac:$("colorVAC").value,uvac:$("colorUVAC").value,sick:$("colorSICK").value};s.tones={s1:parseInt($("toneS1").value,10)||0,s2:parseInt($("toneS2").value,10)||0,s3:parseInt($("toneS3").value,10)||0,wd:parseInt($("toneWD").value,10)||0,vac:parseInt($("toneVAC").value,10)||0,uvac:parseInt($("toneUVAC").value,10)||0,sick:parseInt($("toneSICK").value,10)||0};if(s.template==="five_day")s.cycle=[SHIFT.WD];if(s.template==="week_s1_s2")s.cycle=[SHIFT.S1,SHIFT.S1,SHIFT.S1,SHIFT.S1,SHIFT.S1,SHIFT.OFF,SHIFT.OFF,SHIFT.S2,SHIFT.S2,SHIFT.S2,SHIFT.S2,SHIFT.S2,SHIFT.OFF,SHIFT.OFF];saveSchedule(s);applyScheduleColors(s);updatePctLabels(s);return s}
+["template","anchor","autoShift","fillTime","preserveTime","hS1","hS2","hS3","hWD","minuteStep","considerNight","nightStart","nightEnd","startS1","endS1","startS2","endS2","startS3","endS3","startWD","endWD","colorS1","colorS2","colorS3","colorWD","colorVAC","colorUVAC","colorSICK","toneS1","toneS2","toneS3","toneWD","toneVAC","toneUVAC","toneSICK"].forEach(id=>{$(id).addEventListener("input",()=>{saveScheduleFromForm();build();renderCycleEditor(loadSchedule())});$(id).addEventListener("change",()=>{saveScheduleFromForm();build();renderCycleEditor(loadSchedule())})});
+$("addCycleDayBtn").onclick=()=>{const s=loadSchedule();if(s.template==="five_day")return;s.template="custom";s.enabled=true;s.cycle=s.cycle&&s.cycle.length?s.cycle:[SHIFT.OFF];s.cycle.push(SHIFT.OFF);saveSchedule(s);renderCycleEditor(s)};$("removeCycleDayBtn").onclick=()=>{const s=loadSchedule();if(s.template==="five_day")return;if(s.cycle&&s.cycle.length>1)s.cycle.pop();saveSchedule(s);renderCycleEditor(s)};
+$("applyScheduleBtn").onclick=()=>{const s=saveScheduleFromForm(),ym=monthEl.value||defaultMonthValue(),[Y,M]=ym.split("-").map(Number),data=loadJSON(STORAGE_KEY(ym),{}); s.fillTime = !!(document.getElementById("fillTime") && document.getElementById("fillTime").checked);for(let d=1;d<=daysInMonth(Y,M);d++){const ds=`${Y}-${pad2(M)}-${pad2(d)}`,row=ensureRow(data,ds);row.shift=SHIFT.AUTO;if(s.fillTime){const hasAny=(row.workMin||0)>0;if(s.preserveTime&&hasAny)continue;const sh=s.autoShift?computeShift(ds,s):SHIFT.OFF,hh=sh===SHIFT.S1?s.hoursDefault.s1:sh===SHIFT.S2?s.hoursDefault.s2:sh===SHIFT.S3?s.hoursDefault.s3:sh===SHIFT.WD?s.hoursDefault.wd:0;row.workMin=Math.round((hh||0)*60)}}saveMonthData(ym,data);build()};$("saveScheduleBtn").onclick=()=>{saveScheduleFromForm();scheduleBackdrop.classList.remove("open");build()};
+const tariffBackdrop=$("tariffBackdrop");$("tariffBtn").onclick=()=>{renderTariffForm(); tariffBackdrop.classList.add("open"); if(window.__ts112_fullSize) window.__ts112_fullSize("tariffBackdrop")};$("closeTariffBtn").onclick=()=>{saveTariffFromForm();tariffBackdrop.classList.remove("open"); if(window.__ts112_release) window.__ts112_release("tariffBackdrop"); build()};tariffBackdrop.addEventListener("click",e=>{if(e.target===tariffBackdrop){saveTariffFromForm();tariffBackdrop.classList.remove("open"); if(window.__ts112_release) window.__ts112_release("tariffBackdrop"); build()}});
+function renderTariffForm(){const t=loadTariff();$("currency").value=t.currency;$("rate").value=t.rate;$("monthlyNorm").value=t.monthlyNorm;$("payoutHours").value=t.payoutHours;$("multWeek").value=t.mult.weekday;$("multSat").value=t.mult.saturday;$("multSun").value=t.mult.sunday;$("multHol").value=t.mult.holiday;$("multNight").value=t.mult.night;$("ot1").value=t.overtime.h1;$("ot2").value=t.overtime.h2;$("ot3").value=t.overtime.h3;$("bankStart").value=t.bankStart;$("satBankStart").value=t.satBankStart;$("sunBankStart").value=t.sunBankStart;$("vacHours").value=t.vacHours;if($("vacRemainView"))$("vacRemainView").value=$("sumDedVac")?`${$("banksHint").textContent.match(/отпуск ([0-9.,-]+)/)?.[1]||t.vacHours} ч`:`${t.vacHours} ч`;$("vacDaysPerYear").value=t.vacDaysPerYear;$("vacDayHours").value=t.vacDayHours;$("taxRate").value=t.tax.rate||0;$("taxEnabled").checked=!!t.tax.enabled;$("taxAll").checked=Object.values(t.tax.apply||{}).every(Boolean);$("taxWeekday").checked=!!t.tax.apply.weekday;$("taxSaturday").checked=!!t.tax.apply.saturday;$("taxSunday").checked=!!t.tax.apply.sunday;$("taxHoliday").checked=!!t.tax.apply.holiday;$("taxOvertime").checked=!!t.tax.apply.overtime;$("taxPaidLeave").checked=!!t.tax.apply.paid_leave;$("taxSick").checked=!!t.tax.apply.sick_leave;}
+function saveTariffFromForm(){const t=loadTariff();t.currency=$("currency").value;t.rate=parseFloat($("rate").value||0)||0;t.monthlyNorm=parseFloat($("monthlyNorm").value||0)||0;t.payoutHours=parseFloat($("payoutHours").value||0)||0;t.mult={weekday:parseFloat($("multWeek").value||1)||1,saturday:parseFloat($("multSat").value||1)||1,sunday:parseFloat($("multSun").value||1)||1,holiday:parseFloat($("multHol").value||1)||1,night:parseFloat($("multNight").value||1)||1};t.overtime={h1:parseFloat($("ot1").value||1)||1,h2:parseFloat($("ot2").value||1)||1,h3:parseFloat($("ot3").value||1)||1};t.bankStart=parseFloat($("bankStart").value||0)||0;t.satBankStart=parseFloat($("satBankStart").value||0)||0;t.sunBankStart=parseFloat($("sunBankStart").value||0)||0;t.vacHours=parseFloat($("vacHours").value||0)||0;t.vacDaysPerYear=parseFloat($("vacDaysPerYear").value||0)||0;t.vacDayHours=parseFloat($("vacDayHours").value||8)||8;t.tax={enabled:$("taxEnabled").checked,rate:parseFloat($("taxRate").value||0)||0,apply:{weekday:$("taxWeekday").checked,saturday:$("taxSaturday").checked,sunday:$("taxSunday").checked,holiday:$("taxHoliday").checked,overtime:$("taxOvertime").checked,paid_leave:$("taxPaidLeave").checked,sick_leave:$("taxSick").checked}};saveTariff(t);return t}
+["currency","rate","monthlyNorm","payoutHours","multWeek","multSat","multSun","multHol","multNight","ot1","ot2","ot3","bankStart","satBankStart","sunBankStart","vacHours","vacDaysPerYear","vacDayHours","taxRate","taxEnabled","taxWeekday","taxSaturday","taxSunday","taxHoliday","taxOvertime","taxPaidLeave","taxSick","taxAll"].forEach(id=>{$(id).addEventListener("input",()=>{saveTariffFromForm();build()});$(id).addEventListener("change",()=>{saveTariffFromForm();build()})});
+$("taxAll").onclick=()=>{["taxWeekday","taxSaturday","taxSunday","taxHoliday","taxOvertime","taxPaidLeave","taxSick"].forEach(id=>$(id).checked=$("taxAll").checked);saveTariffFromForm();build()};$("normByWorkdaysBtn").onclick=()=>{$("monthlyNorm").value=monthNormByWorkdays();saveTariffFromForm();build()};$("resetTariffBtn").onclick=()=>{saveTariff(defaultTariff());renderTariffForm();build()};$("saveTariffBtn").onclick=()=>{saveTariffFromForm();tariffBackdrop.classList.remove("open");build()};
+
+$("newMonthBtn").onclick=()=>{
+  const ym=monthEl.value||defaultMonthValue();
+  if(!confirm(`Перейти на следующий месяц?\nТекущий месяц будет сохранён, а депозит перенесётся.`)) return;
+  monthEl.value = nextMonthValue(ym);
+  build();
+};
+$("toggleViewBtn").onclick=()=>{
+  const s=loadSettings();
+  s.view = (s.view==="calendar" ? "list" : "calendar");
+  saveSettings(s);
+  $("toggleViewBtn").textContent = s.view==="calendar" ? "📋 Вид: календарь" : "📅 Вид: список";
+  build();
+};
+
+$("exportBtn").onclick=()=>{const ym=monthEl.value||defaultMonthValue(),data=loadJSON(STORAGE_KEY(ym),{}),rows=[["date","workMin","leaveMin","type","shift","leaveSource"]];Object.keys(data).sort().forEach(k=>{const r=data[k];rows.push([k,r.workMin||0,r.leaveMin||0,r.type||"auto",r.shift||"auto",r.leaveSource||"none"])});const csv=rows.map(r=>r.join(",")).join("\n"),blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`timesheet_${ym}.csv`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)};
+$("resetBtn").onclick=()=>{const ym=monthEl.value||defaultMonthValue();store.removeItem(STORAGE_KEY(ym));build()};
+function init(){buildCountryRegion();monthEl.value=defaultMonthValue();monthEl.addEventListener("change",build);if(!store.getItem(TARIFF_KEY))saveTariff(defaultTariff());if(!store.getItem(SCHEDULE_KEY))saveSchedule(defaultSchedule());build()}
+if("serviceWorker" in navigator && (location.protocol==="http:"||location.protocol==="https:")){window.addEventListener("load",()=>{navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{})})}
+init();
+}catch(err){const b=document.getElementById("errorBanner");if(b){b.style.display="block";b.textContent="Ошибка в приложении: "+err}alert("Ошибка в приложении (v14): "+err)}})();
+</script>
+
+
+
+
+<script id="v83-ui-patch">
+(function(){
+  const oldBuild = window.build;
+  if(!oldBuild) return;
+
+  function hideNightStuff(card){
+    const nodes = Array.from(card.querySelectorAll('*'));
+    nodes.forEach(el => {
+      const txt = (el.textContent || '').trim();
+      if (
+        txt === 'Ночные ч' ||
+        txt === 'Ночные мин' ||
+        txt === 'Ночные' ||
+        txt === 'Ночные часы'
+      ){
+        const wrap = el.closest('.timeItemFix,.mini,.timeItem,.nightBlock,.nightRow,div') || el;
+        if (wrap) wrap.classList.add('nightInputsHide');
+      }
+      // hide pure numeric night values located near night labels
+      if ((el.className || '').toString().match(/night/i)) {
+        el.classList.add('nightInputsHide');
+      }
+    });
+
+    // also hide containers that still visually belong to night section
+    card.querySelectorAll('.nightRow,.nightBlock,[data-night],.nightInputs,[data-role="night"]').forEach(el=>{
+      el.classList.add('nightInputsHide');
+    });
+
+    // remove old note
+    card.querySelectorAll('.nightNoteFix').forEach(n => n.remove());
+
+    const hasOvertime = /Переработка/.test(card.textContent || '');
+    if (hasOvertime) {
+      let considerNight = false;
+      try {
+        const sch = window.loadSchedule ? window.loadSchedule() : null;
+        considerNight = !!(sch && sch.considerNight);
+      } catch(e){}
+      const note = document.createElement('div');
+      note.className = 'nightNoteFix';
+      note.textContent = considerNight
+        ? '* учитываются ночные часы'
+        : '* ночные часы не учитываются';
+
+      const controls = card.querySelector('.selectStackFix');
+      if (controls && controls.parentElement) {
+        controls.parentElement.insertBefore(note, controls);
+      } else {
+        card.appendChild(note);
+      }
+    }
+  }
+
+  window.build = function(){
+    oldBuild();
+    setTimeout(() => {
+      document.querySelectorAll('.day').forEach(card => {
+        hideNightStuff(card);
+      });
+    }, 0);
+    setTimeout(() => {
+      document.querySelectorAll('.day').forEach(card => {
+        hideNightStuff(card);
+      });
+    }, 120);
+  };
+})();
+</script>
+
+
+
+
+<style id="v84-hard-overrides">
+/* Real fullscreen dialogs */
+.backdrop,
+div.backdrop{
+  position:fixed !important;
+  left:0 !important; top:0 !important; right:0 !important; bottom:0 !important;
+  width:100vw !important; height:100vh !important;
+  max-width:100vw !important; max-height:100vh !important;
+  padding:0 !important; margin:0 !important;
+  display:none !important;
+  align-items:stretch !important; justify-content:stretch !important;
+  z-index:99999 !important;
+  background:rgba(0,0,0,.84) !important;
+}
+.backdrop.open,
+div.backdrop.open{display:flex !important;}
+.backdrop .modal,
+div.backdrop .modal,
+.modal{
+  position:fixed !important;
+  left:0 !important; top:0 !important; right:0 !important; bottom:0 !important;
+  width:100vw !important; height:100vh !important;
+  min-width:100vw !important; min-height:100vh !important;
+  max-width:100vw !important; max-height:100vh !important;
+  margin:0 !important;
+  border-radius:0 !important;
+  border:0 !important;
+  overflow:auto !important;
+  box-sizing:border-box !important;
+}
+
+/* Source row layout */
+.specialContentPad{padding-right:92px !important;}
+.controlsRight{
+  position:absolute !important;
+  right:8px !important;
+  top:10px !important;
+  width:44px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  gap:10px !important;
+}
+.controlsRight .selectSmall{
+  width:44px !important; min-width:44px !important; max-width:44px !important;
+  height:40px !important;
+}
+.leaveRowFix.unpaidLeaveRow{
+  display:grid !important;
+  grid-template-columns:160px 1fr !important;
+  gap:10px !important;
+  align-items:end !important;
+  padding-right:86px !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock{
+  min-width:0 !important;
+}
+.leaveRowFix.unpaidLeaveRow .leaveMinBlock [data-action="source"]{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+  padding-right:28px !important;
+}
+
+/* Night note */
+.nightNoteOnly{
+  margin-top:6px !important;
+  color:#f87171 !important;
+  font-size:11px !important;
+  line-height:1.25 !important;
+}
+</style>
+
+<script id="v84-ui-patch">
+(function(){
+  const oldBuild = window.build;
+  if(!oldBuild) return;
+
+  function killNight(card){
+    const nodes = Array.from(card.querySelectorAll('*'));
+    const targets = [];
+    nodes.forEach(el => {
+      const txt = (el.textContent || '').trim();
+      if (
+        txt === 'Ночные ч' || txt === 'Ночные мин' ||
+        txt === 'Ночные часы' || txt === 'Ночные'
+      ){
+        const wrap = el.closest('.timeItemFix,.timeItem,.mini,.nightBlock,.nightRow,div') || el.parentElement;
+        if (wrap) targets.push(wrap);
+      }
+      if (/(^|\\s)(night|nightRow|nightBlock)(\\s|$)/i.test(String(el.className||''))) {
+        targets.push(el);
+      }
+    });
+    targets.forEach(el => {
+      if (el) el.style.display = 'none';
+    });
+
+    card.querySelectorAll('.nightNoteOnly').forEach(n => n.remove());
+    const hasOvertime = /Переработка/.test(card.textContent || '');
+    if (hasOvertime) {
+      let considerNight = false;
+      try {
+        const sch = window.loadSchedule ? window.loadSchedule() : null;
+        considerNight = !!(sch && sch.considerNight);
+      } catch(e){}
+      const note = document.createElement('div');
+      note.className = 'nightNoteOnly';
+      note.textContent = considerNight
+        ? '* учитываются ночные часы'
+        : '* ночные часы не учитываются';
+
+      const overtimeMinBlock = Array.from(card.querySelectorAll('div,label,span')).find(el => ((el.textContent||'').trim()==='Переработка мин'));
+      const anchor = overtimeMinBlock ? (overtimeMinBlock.closest('.timeItemFix,.timeItem,.mini,div') || overtimeMinBlock.parentElement) : null;
+      if (anchor && anchor.parentElement) {
+        anchor.parentElement.appendChild(note);
+      } else {
+        card.appendChild(note);
+      }
+    }
+  }
+
+  window.build = function(){
+    oldBuild();
+    setTimeout(() => {
+      document.querySelectorAll('.day').forEach(card => killNight(card));
+    }, 0);
+    setTimeout(() => {
+      document.querySelectorAll('.day').forEach(card => killNight(card));
+    }, 150);
+  };
+})();
+</script>
+
+
+<script id="v111-helper-js">
+(function(){
+  function forceFull(id){
+    const backdrop = document.getElementById(id);
+    if(!backdrop) return;
+    const modal = backdrop.querySelector('.modal');
+    if(backdrop){
+      backdrop.style.display = 'flex';
+      backdrop.style.position = 'fixed';
+      backdrop.style.left = '0';
+      backdrop.style.top = '0';
+      backdrop.style.right = '0';
+      backdrop.style.bottom = '0';
+      backdrop.style.width = window.innerWidth + 'px';
+      backdrop.style.height = window.innerHeight + 'px';
+    }
+    if(modal){
+      modal.style.position = 'fixed';
+      modal.style.left = '0';
+      modal.style.top = '0';
+      modal.style.right = '0';
+      modal.style.bottom = '0';
+      modal.style.width = window.innerWidth + 'px';
+      modal.style.height = window.innerHeight + 'px';
+      modal.style.maxWidth = window.innerWidth + 'px';
+      modal.style.maxHeight = window.innerHeight + 'px';
+      modal.style.minWidth = window.innerWidth + 'px';
+      modal.style.minHeight = window.innerHeight + 'px';
+    }
+    document.body.style.overflow = 'hidden';
+  }
+  function releaseFull(id){
+    const backdrop = document.getElementById(id);
+    if(!backdrop) return;
+    const modal = backdrop.querySelector('.modal');
+    if(backdrop){
+      backdrop.style.width = '';
+      backdrop.style.height = '';
+      if(!backdrop.classList.contains('open')) backdrop.style.display = '';
+    }
+    if(modal){
+      modal.style.width = '';
+      modal.style.height = '';
+      modal.style.maxWidth = '';
+      modal.style.maxHeight = '';
+      modal.style.minWidth = '';
+      modal.style.minHeight = '';
+    }
+    document.body.style.overflow = '';
+  }
+  window.__ts110_forceFull = forceFull;
+  window.__ts110_releaseFull = releaseFull;
+  window.addEventListener('resize', function(){
+    if(document.getElementById('scheduleBackdrop')?.classList.contains('open')) forceFull('scheduleBackdrop');
+    if(document.getElementById('tariffBackdrop')?.classList.contains('open')) forceFull('tariffBackdrop');
+  });
+})();
+</script>
+
+
+<script id="v112-helper-js">
+(function(){
+  function fullSize(backdropId){
+    const backdrop = document.getElementById(backdropId);
+    if(!backdrop) return;
+    const modal = backdrop.querySelector('.modal');
+    const vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
+    const vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+    backdrop.style.display = 'flex';
+    backdrop.style.position = 'fixed';
+    backdrop.style.left = '0';
+    backdrop.style.top = '0';
+    backdrop.style.right = '0';
+    backdrop.style.bottom = '0';
+    backdrop.style.width = vw + 'px';
+    backdrop.style.height = vh + 'px';
+    if(modal){
+      modal.style.position = 'fixed';
+      modal.style.left = '0';
+      modal.style.top = '0';
+      modal.style.right = '0';
+      modal.style.bottom = '0';
+      modal.style.width = vw + 'px';
+      modal.style.height = vh + 'px';
+      modal.style.maxWidth = vw + 'px';
+      modal.style.maxHeight = vh + 'px';
+      modal.style.minWidth = vw + 'px';
+      modal.style.minHeight = vh + 'px';
+      modal.style.transform = 'none';
+      modal.style.margin = '0';
+    }
+    document.body.style.overflow = 'hidden';
+  }
+  function release(backdropId){
+    const backdrop = document.getElementById(backdropId);
+    if(!backdrop) return;
+    const modal = backdrop.querySelector('.modal');
+    if(modal){
+      modal.style.width = '';
+      modal.style.height = '';
+      modal.style.maxWidth = '';
+      modal.style.maxHeight = '';
+      modal.style.minWidth = '';
+      modal.style.minHeight = '';
+      modal.style.transform = '';
+      modal.style.margin = '';
+    }
+    if(!backdrop.classList.contains('open')) backdrop.style.display = '';
+    document.body.style.overflow = '';
+  }
+  window.__ts112_fullSize = fullSize;
+  window.__ts112_release = release;
+  window.addEventListener('resize', function(){
+    if(document.getElementById('scheduleBackdrop')?.classList.contains('open')) fullSize('scheduleBackdrop');
+    if(document.getElementById('tariffBackdrop')?.classList.contains('open')) fullSize('tariffBackdrop');
+  });
+})();
+</script>
+
+
+<div class="backdrop" id="rangeBackdrop"><div class="modal">
+  <div class="mhead"><h2 id="rangeTitle" style="margin:0;font-size:16px">Диапазон</h2><button id="closeRangeBtn" type="button">✕ Закрыть</button></div>
+  <div class="mgrid" style="margin-top:10px;grid-template-columns:1fr">
+    <div class="subcard">
+      <div class="controls" style="grid-template-columns:1fr 1fr">
+        <label>С даты<input id="rangeStart" type="date"></label>
+        <label>По дату<input id="rangeEnd" type="date"></label>
+      </div>
+      <div class="switch"><div><b>Только рабочие дни по графику</b><div class="muted">Выходные и праздники пропускаются.</div></div><input id="rangeOnlyWorkdays" type="checkbox" checked></div>
+      <div class="rowbtns" style="justify-content:flex-end"><button class="primary" id="applyRangeBtn" type="button">Применить</button></div>
+    </div>
+  </div>
+</div></div>
+
+<div class="dayPreviewBackdrop" id="dayPreviewBackdrop">
+  <div class="dayPreviewCard" id="dayPreviewCard">
+    <div class="dayPreviewTitle" id="dayPreviewTitle">День</div>
+    <div class="dayPreviewMeta" id="dayPreviewMeta">Информация</div>
+    <div class="dayPreviewGrid" id="dayPreviewGrid"></div>
+  </div>
+</div>
+
+
+<script id="v120-fix-logic">
+(function(){
+  const $ = (id)=>document.getElementById(id);
+  function closeRange(){ const b=$('rangeBackdrop'); if(b) b.classList.remove('open'); document.body.style.overflow=''; }
+  function openRange(kind){
+    const b=$('rangeBackdrop'); if(!b) return;
+    b.dataset.kind=kind;
+    $('rangeTitle').textContent = kind==='vacation' ? 'Отпуск по графику' : 'Больничный';
+    const ym = $('month') && $('month').value ? $('month').value : '';
+    $('rangeStart').value = ym ? ym + '-01' : '';
+    $('rangeEnd').value = ym ? ym + '-01' : '';
+    b.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+  function ds(date){ const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0'); return `${y}-${m}-${d}`; }
+  function eachDate(from, to, cb){
+    const a=new Date(from), b=new Date(to);
+    if(isNaN(a)||isNaN(b)) return;
+    for(let d=new Date(a); d<=b; d.setDate(d.getDate()+1)) cb(new Date(d));
+  }
+  window.__applyRange = function applyRange(kind){
+    const start=$('rangeStart').value, end=$('rangeEnd').value, onlyWorkdays=!!$('rangeOnlyWorkdays').checked;
+    if(!start || !end) return;
+    const sched = window.loadSchedule ? loadSchedule() : null;
+    eachDate(start,end,(d)=>{
+      const dateStr = ds(d), ym = dateStr.slice(0,7);
+      const data = loadJSON(STORAGE_KEY(ym), {});
+      const row = ensureRow(data, dateStr);
+      const holidaySet = (countryEl.value === "DE") ? germanHolidays(d.getFullYear(), regionEl.value) : new Set();
+      const resolved = resolveDayType(dateStr, row.type, holidaySet);
+      const shift = effectiveShift(dateStr, row, sched);
+      const isWorkday = !(resolved==="holiday" || (resolved==="weekend" && shift==="off"));
+      if(onlyWorkdays && !isWorkday){
+        saveJSON(STORAGE_KEY(ym), data);
+        return;
+      }
+      row.type = kind==='vacation' ? 'paid_leave' : 'sick_leave';
+      row.leaveSource = kind==='vacation' ? 'vacation' : 'none';
+      row.workMin = 0;
+      row.leaveMin = getStandardMinutes(dateStr, row, sched);
+      saveJSON(STORAGE_KEY(ym), data);
+    });
+    closeRange();
+    build();
+  }
+
+  window.__openDayPreview = function(dateStr){
+    const ym = dateStr.slice(0,7);
+    const data = loadJSON(STORAGE_KEY(ym), {});
+    const row = data[dateStr] || {workMin:0,leaveMin:0,type:'auto',shift:'auto',leaveSource:'none'};
+    const holidaySet = (countryEl.value === "DE") ? germanHolidays(Number(dateStr.slice(0,4)), regionEl.value) : new Set();
+    const type = resolveDayType(dateStr, row.type, holidaySet);
+    const split = (m)=>({h:Math.floor((m||0)/60), mm:(m||0)%60});
+    const w = split(row.workMin||0), l = split(row.leaveMin||0);
+    $('dayPreviewTitle').textContent = dateStr;
+    $('dayPreviewMeta').textContent = `${humanType(row.type==="auto"?type:row.type)} • ${shiftName(row.shift||'auto')}`;
+    $('dayPreviewGrid').innerHTML = `
+      <div><b>Работа</b><br>${w.h}:${String(w.mm).padStart(2,'0')}</div>
+      <div><b>Отпуск / больничный</b><br>${l.h}:${String(l.mm).padStart(2,'0')}</div>
+      <div><b>Источник</b><br>${row.leaveSource || '—'}</div>
+      <div><b>День</b><br>${dateStr}</div>`;
+    $('dayPreviewBackdrop').classList.add('open');
+  };
+
+  function bindV120(){
+    const vac=$('vacationRangeBtn'), sick=$('sickRangeBtn'), close=$('closeRangeBtn'), apply=$('applyRangeBtn');
+    if(vac && !vac.dataset.bound){ vac.dataset.bound='1'; vac.addEventListener('click',()=>openRange('vacation')); }
+    if(sick && !sick.dataset.bound){ sick.dataset.bound='1'; sick.addEventListener('click',()=>openRange('sick')); }
+    if(close && !close.dataset.bound){ close.dataset.bound='1'; close.addEventListener('click',closeRange); }
+    if(apply && !apply.dataset.bound){ apply.dataset.bound='1'; apply.addEventListener('click',()=>applyRange(($('rangeBackdrop').dataset.kind)||'vacation')); }
+  }
+
+  document.addEventListener('click', function(e){
+    const db=$('dayPreviewBackdrop'), rb=$('rangeBackdrop');
+    if(db && db.classList.contains('open') && e.target===db) db.classList.remove('open');
+    if(rb && rb.classList.contains('open') && e.target===rb) closeRange();
+  }, true);
+
+  bindV120();
+  const oldBuild = window.build;
+  window.build = function(){ oldBuild(); bindV120(); };
+})();
+</script>
+
+
+<script id="v120c-logic-patch">
+(function(){
+  const $ = id => document.getElementById(id);
+
+  function ensureLunchDefaults(s){
+    s.lunch = s.lunch || {};
+    if(s.lunch.durationMin == null) s.lunch.durationMin = 30;
+    if(s.lunch.skipIfWorkedUnderHours == null) s.lunch.skipIfWorkedUnderHours = 6;
+    if(s.lunch.auto == null) s.lunch.auto = true;
+    if(s.lunch.skipSunday == null) s.lunch.skipSunday = true;
+    if(s.lunch.skipHoliday == null) s.lunch.skipHoliday = true;
+    if(s.lunch.normShiftHours == null) s.lunch.normShiftHours = 8;
+    if(s.lunch.takeMissingFromBank == null) s.lunch.takeMissingFromBank = true;
+    return s;
+  }
+
+  const _loadSchedule = window.loadSchedule;
+  if(_loadSchedule && !window.__v120cPatchedLoadSchedule){
+    window.loadSchedule = function(){
+      return ensureLunchDefaults(_loadSchedule());
+    };
+    window.__v120cPatchedLoadSchedule = true;
+  }
+
+  const _renderScheduleForm = window.renderScheduleForm;
+  if(_renderScheduleForm && !window.__v120cPatchedRenderSchedule){
+    window.renderScheduleForm = function(){
+      _renderScheduleForm();
+      const s = ensureLunchDefaults(loadSchedule());
+      if($('lunchDuration')) $('lunchDuration').value = s.lunch.durationMin;
+      if($('lunchSkipUnderHours')) $('lunchSkipUnderHours').value = s.lunch.skipIfWorkedUnderHours;
+      if($('lunchAuto')) $('lunchAuto').checked = !!s.lunch.auto;
+      if($('lunchSkipSunday')) $('lunchSkipSunday').checked = !!s.lunch.skipSunday;
+      if($('lunchSkipHoliday')) $('lunchSkipHoliday').checked = !!s.lunch.skipHoliday;
+      if($('normShiftHours')) $('normShiftHours').value = s.lunch.normShiftHours;
+      if($('takeMissingFromBank')) $('takeMissingFromBank').checked = !!s.lunch.takeMissingFromBank;
+    };
+    window.__v120cPatchedRenderSchedule = true;
+  }
+
+  const _saveScheduleFromForm = window.saveScheduleFromForm;
+  if(_saveScheduleFromForm && !window.__v120cPatchedSaveSchedule){
+    window.saveScheduleFromForm = function(){
+      const s = _saveScheduleFromForm();
+      ensureLunchDefaults(s);
+      if($('lunchDuration')) s.lunch.durationMin = parseInt($('lunchDuration').value || 30, 10) || 30;
+      if($('lunchSkipUnderHours')) s.lunch.skipIfWorkedUnderHours = parseFloat($('lunchSkipUnderHours').value || 6) || 6;
+      if($('lunchAuto')) s.lunch.auto = !!$('lunchAuto').checked;
+      if($('lunchSkipSunday')) s.lunch.skipSunday = !!$('lunchSkipSunday').checked;
+      if($('lunchSkipHoliday')) s.lunch.skipHoliday = !!$('lunchSkipHoliday').checked;
+      if($('normShiftHours')) s.lunch.normShiftHours = parseFloat($('normShiftHours').value || 8) || 8;
+      if($('takeMissingFromBank')) s.lunch.takeMissingFromBank = !!$('takeMissingFromBank').checked;
+      saveSchedule(s);
+      return s;
+    };
+    window.__v120cPatchedSaveSchedule = true;
+  }
+
+  function closeRange(){
+    const b = $('rangeBackdrop');
+    if(b) b.classList.remove('open');
+    document.body.style.overflow='';
+  }
+  function openRange(kind){
+    const b = $('rangeBackdrop');
+    if(!b) return;
+    b.dataset.kind = kind;
+    if($('rangeTitle')) $('rangeTitle').textContent = kind === 'vacation' ? 'Отпуск по графику' : 'Больничный';
+    const ym = $('month') && $('month').value ? $('month').value : '';
+    if($('rangeStart')) $('rangeStart').value = ym ? ym+'-01' : '';
+    if($('rangeEnd')) $('rangeEnd').value = ym ? ym+'-01' : '';
+    b.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+
+  function bindRangeButtons(){
+    const vac = $('vacationRangeBtn');
+    const sick = $('sickRangeBtn');
+    const close = $('closeRangeBtn');
+    const apply = $('applyRangeBtn');
+
+    if(vac){
+      vac.onclick = function(e){
+        e.preventDefault(); e.stopPropagation();
+        openRange('vacation');
+        return false;
+      };
+    }
+    if(sick){
+      sick.onclick = function(e){
+        e.preventDefault(); e.stopPropagation();
+        openRange('sick');
+        return false;
+      };
+    }
+    if(close){
+      close.onclick = function(e){
+        e.preventDefault(); e.stopPropagation();
+        closeRange();
+        return false;
+      };
+    }
+    if(apply){
+      apply.onclick = function(e){
+        e.preventDefault(); e.stopPropagation();
+        if(window.applyRange) window.applyRange(($('rangeBackdrop').dataset.kind)||'vacation');
+        else if(window.__applyRange) window.__applyRange(($('rangeBackdrop').dataset.kind)||'vacation');
+        return false;
+      };
+    }
+  }
+
+  // patch applyRange exposure if original local
+  if(!window.applyRange && window.__applyRange) window.applyRange = window.__applyRange;
+
+  function bindCalendarPopup(){
+    const list = $('list');
+    if(!list || list.dataset.v120cDelegated) return;
+    list.dataset.v120cDelegated = '1';
+    list.addEventListener('click', function(e){
+      const cell = e.target.closest('.calCell');
+      if(!cell) return;
+      e.preventDefault(); e.stopPropagation();
+      if(window.__openDayPreview) window.__openDayPreview(cell.dataset.date);
+    }, true);
+  }
+
+  function refreshSpecialRows(){
+    document.querySelectorAll('.day').forEach(day=>{
+      const typeSel = day.querySelector('[data-action="type"]');
+      const leaveRow = day.querySelector('.leaveRowFix');
+      if(!typeSel || !leaveRow) return;
+      const t = typeSel.value || 'auto';
+      const isSpecial = ['paid_leave','unpaid_leave','sick_leave'].includes(t);
+      leaveRow.style.display = isSpecial ? 'grid' : 'none';
+      const srcSel = day.querySelector('[data-action="source"]');
+      if(srcSel){
+        srcSel.style.display = t === 'unpaid_leave' ? '' : 'none';
+      }
+    });
+  }
+
+  function afterBuildFixes(){
+    bindRangeButtons();
+    bindCalendarPopup();
+    refreshSpecialRows();
+  }
+
+  const _build = window.build;
+  if(_build && !window.__v120cPatchedBuild){
+    window.build = function(){
+      _build();
+      afterBuildFixes();
+    };
+    window.__v120cPatchedBuild = true;
+  }
+
+  document.addEventListener('click', function(e){
+    const db = $('dayPreviewBackdrop');
+    if(db && db.classList.contains('open') && e.target === db){
+      db.classList.remove('open');
+    }
+    const rb = $('rangeBackdrop');
+    if(rb && rb.classList.contains('open') && e.target === rb){
+      closeRange();
+    }
+  }, true);
+
+  // run once
+  setTimeout(afterBuildFixes, 0);
+})();
+</script>
+
+</body></html>
